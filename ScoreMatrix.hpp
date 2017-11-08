@@ -54,4 +54,13 @@ class ScoreMatrix{
 		hash_map.insert({pair1, -1});
 
 	}
-}
+
+	int getDistance(T a1, T a2){
+
+		auto pair = std::make_pair(a1, a2);
+		int distance;
+		assert(hash_map.find(pair) != hash_map.end());
+		int distance = *(hash_map.find(pair));
+		return distance;
+	}
+};
