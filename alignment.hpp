@@ -4,6 +4,8 @@
 #include <vector>
 #include "Matrix.hpp"
 #include "ScoreMatrix.hpp"
+#include <algorithm>
+#include <assert.h>
 
 class Alignment{
 public:
@@ -17,12 +19,14 @@ public:
 	std::vector<Matrix<int>> D;
 	std::vector<Matrix<int>> P; 
 	std::vector<Matrix<int>> Q;
+	Matrix<char> last_entry; 
 	std::vector<Sequence> sequences;
 	ScoreMatrix distance;
 
 	Alignment(Sequence seq1, Sequence seq2, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
 	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length())))
-	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length()))), sequences(std::vector<Sequence>(3, Sequence(""))){
+	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length())))
+	, sequences(std::vector<Sequence>(3, Sequence(""))), last_entry(Matrix<char>(seq1.length(), seq2.length())){
 
 		for(int i = 0; i < 3; ++i){
 			sequences[i] = seq1.shift(i);
@@ -48,6 +52,25 @@ public:
 		return indices;
 	} 
 
+	void print_dp_matrix(int frame){
+		D[frame].print("D");
+	}
+
+	void print_score_matrix(){
+		distance.print();
+	}
+	void print_p_matrix(int frame){
+		P[frame].print("P");
+	}
+
+	void print_q_matrix(int frame){
+		Q[frame].print("Q");
+	}
+
+	void print_bt_matrix(){
+		last_entry.print("Backtrace");
+	}
+
 	void smith_waterman_update(int frame, int i, int j){
 
 
@@ -57,18 +80,31 @@ public:
 		set_value = std::max( D[frame].get_entry(i,j-1) - full_gap_penalty, Q[frame].get_entry(i,j-1) - m_gep);
 		Q[frame].set_entry(i, j, set_value);
 
-		int d1 = std::max(D[frame].get_entry(i-1,j-1) - distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j));
-		int d2 = std::max(Q[frame].get_entry(i,j),0);
-		set_value = std::max( d1, d2);
+		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};
+		const int N = sizeof(max_array) / sizeof(int);
+		set_value = *std::max_element(max_array, max_array+N);
+		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
+		std::cout<<" last_move = "<< last_move<<std::endl;
+		char last_move_c;
+		if(last_move == 0){
+			last_move_c = 'M';
+		}else if(last_move == 1){
+			last_move_c = 'D';
+		}else if(last_move == 2){
+			last_move_c = 'I';
+		}else{
+			assert(0);
+		}
 		D[frame].set_entry(i, j, set_value);
+		last_entry.set_entry(i, j, last_move_c);
 	}
 
 	void frame_shift_update(int curr_frame, int update_frame, int i, int j){
 		
 		int t1 = std::max(D[update_frame].get_entry(i-1,j) - full_gap_penalty, P[update_frame].get_entry(i-1,j) - m_gep);
 		int t2 = std::max(D[update_frame].get_entry(i,j-1) - full_gap_penalty, Q[update_frame].get_entry(i,j-1) - m_gep);
-		int t31 = std::max(D[update_frame].get_entry(i-1,j-1) - distance.getDistance(m_seq[i], m_refseq[j]), t1);
-		int t32 = std::max(t2, 0);
+		int t31 = std::max(D[update_frame].get_entry(i-1,j-1) + distance.getDistance(m_seq[i], m_refseq[j]), t1);
+		int t32 = t2;
 		int t3 = std::max(t31, t32);
 
 		if(t3 - m_delta > D[curr_frame].get_entry(i,j)){
@@ -78,6 +114,37 @@ public:
 		}
 
 		
+	}
+
+	void back_trace(){
+		int first_row_v = m_seq.length()-1;
+		int first_col_v = m_refseq.length()-1;
+		std::string seq = "";
+		std::string ref_seq = "";
+		while((first_col_v > 0) && (first_row_v > 0)){
+			char action = last_entry.get_entry(first_row_v, first_col_v);
+			if(action == 'D'){
+				ref_seq += '_';
+				seq += seq[first_row_v];
+				first_row_v--;
+			}else if(action == 'I'){
+				seq += '_';
+				ref_seq += ref_seq[first_col_v];
+				first_col_v--;
+			}else if(action == 'M'){
+				seq += seq[first_row_v];
+				ref_seq += ref_seq[first_col_v];
+				first_col_v--;
+				first_row_v--;
+			}
+		}
+		reverse(seq.begin(), seq.end());
+		reverse(ref_seq.begin(), ref_seq.end());
+
+		for(int i = 0; i < seq.length(); ++i){
+			std::cout<<" seq = "<< seq[i]<< std::endl;
+			std::cout<<" ref_seq = "<< ref_seq[i]<<std::endl;
+		}
 	}
 
 
@@ -99,8 +166,16 @@ public:
 
 		for(int i = 0; i < m_seq.length(); ++i){
 			for(int j = 0; j < m_refseq.length(); ++j){
+				
 				smith_waterman_update(frame, i, j);
+				
 			}
+		}
+	}
+
+	void compute_smith_waterman_matrices(){
+		for(int f = 0; f < 3; f++ ){
+			compute_smith_waterman_matrices(f);
 		}
 	}
 
