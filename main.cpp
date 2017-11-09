@@ -13,5 +13,6 @@ int main(int argc, char * argv[])
 	al.print_dp_matrix(0);
 	al.print_p_matrix(0);
 	al.print_q_matrix(0);
-	//al.print_score_matrix();
+	al.print_bt_matrix();
+	al.back_trace();
 }

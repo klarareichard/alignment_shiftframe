@@ -20,6 +20,8 @@ public:
 	std::vector<Matrix<int>> P; 
 	std::vector<Matrix<int>> Q;
 	Matrix<char> last_entry; 
+	Matrix<int> frame;
+
 	std::vector<Sequence> sequences;
 	ScoreMatrix distance;
 
@@ -97,20 +99,35 @@ public:
 		}
 		D[frame].set_entry(i, j, set_value);
 		last_entry.set_entry(i, j, last_move_c);
+		frame.set_entry(i, j, frame);
 	}
 
 	void frame_shift_update(int curr_frame, int update_frame, int i, int j){
 		
 		int t1 = std::max(D[update_frame].get_entry(i-1,j) - full_gap_penalty, P[update_frame].get_entry(i-1,j) - m_gep);
 		int t2 = std::max(D[update_frame].get_entry(i,j-1) - full_gap_penalty, Q[update_frame].get_entry(i,j-1) - m_gep);
-		int t31 = std::max(D[update_frame].get_entry(i-1,j-1) + distance.getDistance(m_seq[i], m_refseq[j]), t1);
-		int t32 = t2;
-		int t3 = std::max(t31, t32);
+
+		int max_array[3] = {D[update_frame].get_entry(i-1,j-1) + distance.getDistance(m_seq[i], m_refseq[j]), t1, t2};
+		const int N = sizeof(max_array) / sizeof(int);
+		int t3 = *std::max_element(max_array, max_array+N);
+		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
+		char last_move_c;
+		if(last_move == 0){
+			last_move_c = 'M';
+		}else if(last_move == 1){
+			last_move_c = 'D';
+		}else if(last_move == 2){
+			last_move_c = 'I';
+		}else{
+			assert(0);
+		}
 
 		if(t3 - m_delta > D[curr_frame].get_entry(i,j)){
 			P[curr_frame].set_entry(i,j, t1 - m_delta);
 			Q[curr_frame].set_entry(i,j, t2 - m_delta);
 			D[curr_frame].set_entry(i,j, t3 - m_delta);
+			last_entry.set_entry(i, j, last_move_c);
+			frame.set_entry(update_frame);
 		}
 
 		
@@ -121,27 +138,32 @@ public:
 		int first_col_v = m_refseq.length()-1;
 		std::string seq = "";
 		std::string ref_seq = "";
-		while((first_col_v > 0) && (first_row_v > 0)){
+		while((first_col_v >= 0) && (first_row_v >= 0)){
 			char action = last_entry.get_entry(first_row_v, first_col_v);
 			if(action == 'D'){
 				ref_seq += '_';
-				seq += seq[first_row_v];
+				seq += m_seq[first_row_v];
 				first_row_v--;
 			}else if(action == 'I'){
 				seq += '_';
-				ref_seq += ref_seq[first_col_v];
+				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 			}else if(action == 'M'){
-				seq += seq[first_row_v];
-				ref_seq += ref_seq[first_col_v];
+				seq += m_seq[first_row_v];
+				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 				first_row_v--;
 			}
 		}
 		reverse(seq.begin(), seq.end());
 		reverse(ref_seq.begin(), ref_seq.end());
-
-		for(int i = 0; i < seq.length(); ++i){
+		std::string rev_seq = "";
+		std::string rev_ref_seq = "";
+		for(int i = seq.length()-1; i >= 0; --i){
+			rev_seq.push_back(seq[i]);
+			rev_ref_seq.push_back(ref_seq[i]);
+		}
+		for(int i = 0; i < rev_seq.length(); ++i){
 			std::cout<<" seq = "<< seq[i]<< std::endl;
 			std::cout<<" ref_seq = "<< ref_seq[i]<<std::endl;
 		}
