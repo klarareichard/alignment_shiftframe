@@ -1,21 +1,34 @@
+#pragma once 
+#include "assert.h"
 #include <string>
-template <typename T> class Sequence{
+class Sequence{
+		public:
+		std::string m_seq;
 
-		std::string<T> m_seq;
-
-		Sequence(std::string s):m_seq(seq){};
+		char operator[](int i){
+			return m_seq[i];
+		}
+		Sequence(std::string s):m_seq(s){};
 		
-		void shift(int i){
-			m_seq = m_seq.substr(i, m_seq.length());
+		Sequence shift(int i){
+			return m_seq.substr(i, m_seq.length());
 		}
 
-		std::string<T> get_string(){
+		std::string get_string(){
 			return m_seq;
 		}
 
 		char get_entry(int i){
 			assert(i < m_seq.length());
 			return m_seq[i];
+		}
+
+		int length(){
+			return m_seq.length();
+		}
+
+		Sequence substr(int i){
+			return m_seq.substr(i);
 		}
 
 

@@ -1,11 +1,12 @@
+#pragma once 
 #include <unordered_map>
-#include <pair>
+#include <utility>
 
-template<typename T>
 class ScoreMatrix{
-	std::unordered_map< std::pair<T,T>, int > hash_map;
+public:
+	std::unordered_map< std::string, int > hash_map;
 	ScoreMatrix(){
-		auto pair1 = std::make_pair('A', 'A'); 
+		/*auto pair1 = std::make_pair('A', 'A'); 
 		hash_map.insert({pair1, -1});
 
 		pair1 = std::make_pair('A', 'C'); 
@@ -51,16 +52,17 @@ class ScoreMatrix{
 		hash_map.insert({pair1, 1});
 
 		pair1 = std::make_pair('T', 'T'); 
-		hash_map.insert({pair1, -1});
+		hash_map.insert({pair1, -1});*/
 
 	}
 
-	int getDistance(T a1, T a2){
+	int getDistance(char a1, char a2){
 
-		auto pair = std::make_pair(a1, a2);
-		int distance;
-		assert(hash_map.find(pair) != hash_map.end());
-		int distance = *(hash_map.find(pair));
+		std::string concat = "";
+		concat+= a1;
+		concat+= a2;
+		assert(hash_map.find(concat) != hash_map.end());
+		int distance = (hash_map.find(concat))->second;
 		return distance;
 	}
 };
