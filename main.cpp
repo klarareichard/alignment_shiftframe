@@ -3,6 +3,7 @@
 #include "ScoreMatrix.hpp"
 #include "MatrixReader.hpp"
 #include "Translator.hpp"
+#include "InputReader.hpp"
 
 int main(int argc, char * argv[])
 {
@@ -20,6 +21,10 @@ int main(int argc, char * argv[])
 	Alignment al(seq1, seq2, sequences, 1, 1, 1);
 	//al.compute_smith_waterman_matrices(0);
 	al.compute_all_dp_matrices();
+
+	InputReader ir;
+	ir.readFASTAfile("Frameshift_Alignments_1000.txt");
+	ir.print_input();
 	/*al.print_dp_matrix(0);
 	al.print_p_matrix(0);
 	al.print_q_matrix(0);
