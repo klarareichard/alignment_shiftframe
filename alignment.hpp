@@ -19,20 +19,19 @@ public:
 	std::vector<Matrix<int>> D;
 	std::vector<Matrix<int>> P; 
 	std::vector<Matrix<int>> Q;
-	Matrix<char> last_entry; 
-	Matrix<int> frame;
+	std::vector<Matrix<char>> last_entry;
+	std::vector<Matrix<int>> m_frame;
+	std::vector<int> lengths;
+
 
 	std::vector<Sequence> sequences;
 	ScoreMatrix distance;
 
-	Alignment(Sequence seq1, Sequence seq2, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
-	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length())))
-	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length(), seq2.length())))
-	, sequences(std::vector<Sequence>(3, Sequence(""))), last_entry(Matrix<char>(seq1.length(), seq2.length())){
+	Alignment(Sequence seq1, Sequence seq2, std::vector<Sequence> in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
+	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
+	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
+	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(seq1.length()+1, seq2.length()))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length()))){
 
-		for(int i = 0; i < 3; ++i){
-			sequences[i] = seq1.shift(i);
-		}
 	};
 
 	std::vector<int> getOtherIndices(int i){
@@ -69,8 +68,8 @@ public:
 		Q[frame].print("Q");
 	}
 
-	void print_bt_matrix(){
-		last_entry.print("Backtrace");
+	void print_bt_matrix(int frame){
+		last_entry[frame].print("Backtrace");
 	}
 
 	void smith_waterman_update(int frame, int i, int j){
@@ -98,8 +97,8 @@ public:
 			assert(0);
 		}
 		D[frame].set_entry(i, j, set_value);
-		last_entry.set_entry(i, j, last_move_c);
-		frame.set_entry(i, j, frame);
+		last_entry[frame].set_entry(i, j, last_move_c);
+		m_frame[frame].set_entry(i, j, frame);
 	}
 
 	void frame_shift_update(int curr_frame, int update_frame, int i, int j){
@@ -107,7 +106,7 @@ public:
 		int t1 = std::max(D[update_frame].get_entry(i-1,j) - full_gap_penalty, P[update_frame].get_entry(i-1,j) - m_gep);
 		int t2 = std::max(D[update_frame].get_entry(i,j-1) - full_gap_penalty, Q[update_frame].get_entry(i,j-1) - m_gep);
 
-		int max_array[3] = {D[update_frame].get_entry(i-1,j-1) + distance.getDistance(m_seq[i], m_refseq[j]), t1, t2};
+		int max_array[3] = {D[update_frame].get_entry(i-1,j-1) + distance.getDistance(sequences[curr_frame][i], m_refseq[j]), t1, t2};
 		const int N = sizeof(max_array) / sizeof(int);
 		int t3 = *std::max_element(max_array, max_array+N);
 		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
@@ -126,34 +125,39 @@ public:
 			P[curr_frame].set_entry(i,j, t1 - m_delta);
 			Q[curr_frame].set_entry(i,j, t2 - m_delta);
 			D[curr_frame].set_entry(i,j, t3 - m_delta);
-			last_entry.set_entry(i, j, last_move_c);
-			frame.set_entry(update_frame);
+			last_entry[curr_frame].set_entry(i, j, last_move_c);
+			m_frame[curr_frame].set_entry(i, j, update_frame);
 		}
 
 		
 	}
 
-	void back_trace(){
-		int first_row_v = m_seq.length()-1;
+	void back_trace(int frame){
+
+		Sequence al_seq = sequences[frame];
+		int first_row_v = al_seq.length()-1;
 		int first_col_v = m_refseq.length()-1;
 		std::string seq = "";
 		std::string ref_seq = "";
 		while((first_col_v >= 0) && (first_row_v >= 0)){
-			char action = last_entry.get_entry(first_row_v, first_col_v);
+			std::cout<<"backtrace"<<std::endl;
+			char action = last_entry[frame].get_entry(first_row_v, first_col_v);
+			std::cout<<"action = "<<action<<std::endl;
 			if(action == 'D'){
 				ref_seq += '_';
-				seq += m_seq[first_row_v];
+				seq += al_seq[first_row_v];
 				first_row_v--;
 			}else if(action == 'I'){
 				seq += '_';
 				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 			}else if(action == 'M'){
-				seq += m_seq[first_row_v];
+				seq += al_seq[first_row_v];
 				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 				first_row_v--;
 			}
+
 		}
 		reverse(seq.begin(), seq.end());
 		reverse(ref_seq.begin(), ref_seq.end());
@@ -172,7 +176,7 @@ public:
 
 	void extend_dp_Matrix(int frame, int i, int j){
 
-		Sequence seq = m_seq.shift(frame);
+		Sequence seq = sequences[frame];
 		Sequence ref = m_refseq;
 
 		std::vector<int> otherIndices = getOtherIndices(frame);
@@ -213,6 +217,19 @@ public:
 				extend_dp_Matrix(2, i, j);
 			}
 		}
+
+		int t1 = D[0].get_entry(sequences[0].length()-1, sequences[0].length()-1);
+		int t2 = D[1].get_entry(sequences[1].length()-1, sequences[1].length()-1);
+		int t3 = D[2].get_entry(sequences[2].length()-1, sequences[2].length()-1);
+
+		int max_array[3] = {t1, t2, t3};
+		const int N = sizeof(max_array) / sizeof(int);
+		int max = *std::max_element(max_array, max_array+N);
+		int max_element = std::distance(max_array, std::max_element(max_array, max_array+N));
+
+		back_trace(max_element);
+
+
 	}
 
 };

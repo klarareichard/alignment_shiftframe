@@ -18,8 +18,13 @@ public:
 		std::string concat = "";
 		concat+= a1;
 		concat+= a2;
-		assert(hash_map.find(concat) != hash_map.end());
-		int distance = (hash_map.find(concat))->second;
+		std::cout<<"concat = "<< concat <<std::endl;
+		int distance;
+		if(hash_map.find(concat) != hash_map.end()){
+			distance = (hash_map.find(concat))->second;
+		}else{
+			distance = -1;
+		}
 		return distance;
 	}
 
@@ -46,7 +51,7 @@ public:
 		    	if(line_num == -1){
 			    	while(iss.get(c)){
 			    		if((!isspace(c))){
-			    			std::cout<< "c = "<< c <<std::endl;
+			    			//std::cout<< "c = "<< c <<std::endl;
 			    			rows_and_columns += c;
 			    		}
 			    	}
@@ -61,8 +66,8 @@ public:
 				    		s += row_nuc;
 				    		s += rows_and_columns[col_num];
 				    		hash_map.insert({s, i });
-				    		std::cout<<"s = "<<s<<std::endl;
-				    		std::cout<<"distance = "<<i<<std::endl;
+				    		//std::cout<<"s = "<<s<<std::endl;
+				    		//std::cout<<"distance = "<<i<<std::endl;
 				    		col_num++;
 				    	//}
 			    	}
@@ -73,7 +78,7 @@ public:
 		}
 
 		for(int i = 0; i < rows_and_columns.length(); ++i){
-			std::cout<<" chars = "<< rows_and_columns[i]<<std::endl;
+			//std::cout<<" chars = "<< rows_and_columns[i]<<std::endl;
 		}
 	}
 };

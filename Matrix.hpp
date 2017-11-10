@@ -8,6 +8,7 @@ template<typename T> class Matrix{
 		int m_width; 
 		std::vector<std::vector<T> > m_matrix;
 
+		
 	Matrix(int length, int width):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0)){};
 	
 	void set_entry(int i, int j, T value){
