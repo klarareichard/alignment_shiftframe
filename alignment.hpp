@@ -11,6 +11,8 @@ class Alignment{
 public:
 	Sequence m_refseq; 
 	Sequence m_seq;
+	std::string aligned_seq;
+	std::string aligned_ref_seq;
 	int m_gop; //gap opening penalty
 	int m_gep; // gap extension penalty
 	int full_gap_penalty = m_gop + m_gep;
@@ -30,7 +32,8 @@ public:
 	Alignment(Sequence seq1, Sequence seq2, std::vector<Sequence> in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
 	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
 	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
-	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(seq1.length()+1, seq2.length()))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length()))){
+	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(seq1.length()+1, seq2.length()))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
+	, aligned_seq(""), aligned_ref_seq(""){
 
 	};
 
@@ -85,7 +88,7 @@ public:
 		const int N = sizeof(max_array) / sizeof(int);
 		set_value = *std::max_element(max_array, max_array+N);
 		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
-		std::cout<<" last_move = "<< last_move<<std::endl;
+		//std::cout<<" last_move = "<< last_move<<std::endl;
 		char last_move_c;
 		if(last_move == 0){
 			last_move_c = 'M';
@@ -140,9 +143,9 @@ public:
 		std::string seq = "";
 		std::string ref_seq = "";
 		while((first_col_v >= 0) && (first_row_v >= 0)){
-			std::cout<<"backtrace"<<std::endl;
+		//	std::cout<<"backtrace"<<std::endl;
 			char action = last_entry[frame].get_entry(first_row_v, first_col_v);
-			std::cout<<"action = "<<action<<std::endl;
+		//	std::cout<<"action = "<<action<<std::endl;
 			if(action == 'D'){
 				ref_seq += '_';
 				seq += al_seq[first_row_v];
@@ -167,10 +170,10 @@ public:
 			rev_seq.push_back(seq[i]);
 			rev_ref_seq.push_back(ref_seq[i]);
 		}
-		for(int i = 0; i < rev_seq.length(); ++i){
-			std::cout<<" seq = "<< seq[i]<< std::endl;
-			std::cout<<" ref_seq = "<< ref_seq[i]<<std::endl;
-		}
+
+		aligned_seq = rev_seq;
+		aligned_ref_seq = rev_ref_seq;
+
 	}
 
 
@@ -209,7 +212,6 @@ public:
 
 		Sequence ref_seq = m_refseq;
 		Sequence seq = m_seq;
-
 		for(int i = 0; i < seq.length(); ++i){
 			for(int j = 0; j < ref_seq.length(); ++j){
 				extend_dp_Matrix(0, i, j);
@@ -230,6 +232,19 @@ public:
 		back_trace(max_element);
 
 
+
 	}
+
+	std::string get_aligned_seq(){
+		return aligned_seq;
+	}
+
+	std::string get_aligned_ref_seq(){
+		return aligned_ref_seq;
+	}
+
+
+
+
 
 };

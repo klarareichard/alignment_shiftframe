@@ -100,11 +100,15 @@ public:
                 Sequence out_seq;
                 for(int i = 0; i < in_seq.length()/3; ++i){
                         Sequence seed = in_seq.substr(i*3, 3);
-                        seed.print("seed");
-                        std::cout<<"seed finished"<<std::endl;
-                        in_seq.print("in_seq");
-                        char trans_char = (hash_map.find(seed.get_string()))->second;
-                        out_seq.append(trans_char);
+                        if(hash_map.find(seed.get_string()) != hash_map.end()){
+                                char trans_char = (hash_map.find(seed.get_string()))->second;
+                                out_seq.append(trans_char);
+                        }else{
+                                /*std::cout<<" Could not match :"<<std::endl;
+                                seed.print("seed");
+                                std::cout<<"seed finished"<<std::endl;
+                                in_seq.print("in_seq");*/
+                        }
                 }
                 m_out_sequences.push_back(out_seq);
 

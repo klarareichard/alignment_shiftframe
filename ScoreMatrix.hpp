@@ -18,7 +18,7 @@ public:
 		std::string concat = "";
 		concat+= a1;
 		concat+= a2;
-		std::cout<<"concat = "<< concat <<std::endl;
+		//std::cout<<"concat = "<< concat <<std::endl;
 		int distance;
 		if(hash_map.find(concat) != hash_map.end()){
 			distance = (hash_map.find(concat))->second;
