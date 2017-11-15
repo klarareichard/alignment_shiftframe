@@ -8,11 +8,8 @@ class Sequence{
 		std::string m_seq;
 
 		char operator[](int i){
-			if(i > -1){
-				return m_seq[i];
-			}else{
-				return 0;
-			}
+			assert(i > -1);
+			return m_seq[i];
 		}
 		Sequence(std::string s):m_seq(s){};
 		Sequence(): m_seq(""){};

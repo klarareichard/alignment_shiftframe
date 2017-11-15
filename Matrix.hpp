@@ -1,7 +1,7 @@
 #pragma once 
 #include <vector>
 #include <iostream>
-template<typename T> class Matrix{
+template<class T> class Matrix{
 	
 	public:
 		int m_length; 
@@ -15,13 +15,38 @@ template<typename T> class Matrix{
 		m_matrix[i][j] = value;
 	}	
 
-	T get_entry(int i, int j){
-		if((i == -1) || (j == -1)){
+	template<>
+	int get_entry<int>(int i, int j){
+
+		if((i == -1) && (j >= 0)){
+			return -j-1;
+		}else if(i == -1){
+			return 0;
+		}else if((j == -1) && (i >= 0)){
+			return -i-1;
+		}else if(j == -1){
 			return 0;
 		}else{
 			return m_matrix[i][j];
 		}
 	}
+
+	template<>
+	char get_entry<char>(int i, int j){
+
+		if((i == -1) && (j >= 0)){
+			return 'D';
+		}else if(i == -1){
+			return 'F';
+		}else if((j == -1) && (i >= 0)){
+			return 'I';
+		}else if(j == -1){
+			return 'F';
+		}else{
+			return m_matrix[i][j];
+		}
+	}
+
 
 	int get_length(){
 		return m_length;
@@ -32,10 +57,12 @@ template<typename T> class Matrix{
 	}
 
 	void print(std::string name){
-		for(int i = 0; i < this->get_length(); ++i){
-			for(int j = 0; j < this->get_width(); ++j){
-				std::cout<< name<<"[ "<<i<<" ][ "<<j<<"] = "<< this->get_entry(i,j)<<std::endl;
+		std::cout<<name<<std::endl;
+		for(int i = -1; i < this->get_length(); ++i){
+			for(int j = -1; j < this->get_width(); ++j){
+				/*std::cout<< name<<"[ "<<i<<" ][ "<<j<<"] = "*/ std::cout<< this->get_entry(i,j)<< " ";
 			}
+			std::cout<<std::endl;
 		}
 	}
 };

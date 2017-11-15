@@ -10,7 +10,6 @@ public:
 	std::string file_name;
 	
 	ScoreMatrix(){
-		readBlosum62("Blosum62.txt");
 	}
 
 	int getDistance(char a1, char a2){

@@ -1,0 +1,7 @@
+.DS_Store
+.idea/
+CMakeLists.txt
+Frameshift_samples/
+cmake-build-debug/
+main 
+main.dSYM/

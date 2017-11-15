@@ -1,6 +1,7 @@
 #pragma once 
 #include "Sequence.hpp"
 #include <unordered_map>
+#include <iostream>
 class Translator{
 
 public:
@@ -97,20 +98,21 @@ public:
 	}
 
         void translate(Sequence & in_seq){
-                Sequence out_seq;
-                for(int i = 0; i < in_seq.length()/3; ++i){
-                        Sequence seed = in_seq.substr(i*3, 3);
-                        if(hash_map.find(seed.get_string()) != hash_map.end()){
-                                char trans_char = (hash_map.find(seed.get_string()))->second;
-                                out_seq.append(trans_char);
-                        }else{
-                                /*std::cout<<" Could not match :"<<std::endl;
-                                seed.print("seed");
-                                std::cout<<"seed finished"<<std::endl;
-                                in_seq.print("in_seq");*/
-                        }
-                }
-                m_out_sequences.push_back(out_seq);
+            std::cout<<"Nucleotide sequence = "<< in_seq.get_string() << std::endl;
+            Sequence out_seq;
+            for(int i = 0; i < in_seq.length()/3; ++i){
+                    Sequence seed = in_seq.substr(i*3, 3);
+                    if(hash_map.find(seed.get_string()) != hash_map.end()){
+                            char trans_char = (hash_map.find(seed.get_string()))->second;
+                            out_seq.append(trans_char);
+                    }else{
+                            /*std::cout<<" Could not match :"<<std::endl;
+                            seed.print("seed");
+                            std::cout<<"seed finished"<<std::endl;
+                            in_seq.print("in_seq");*/
+                    }
+            }
+            m_out_sequences.push_back(out_seq);
 
         }
 
@@ -124,6 +126,13 @@ public:
 
         std::vector<Sequence> get_out_sequences(){
                 return m_out_sequences;
+        }
+
+        void print_translated_sequences(){
+            for(int i = 0; i < 3; ++i){
+                std::string out = m_out_sequences[i].get_string();
+                std::cout<<"translated frame "<< i << " = "<< out <<std::endl;
+            }
         }
 
 };

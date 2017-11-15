@@ -30,11 +30,13 @@ public:
 	ScoreMatrix distance;
 
 	Alignment(Sequence seq1, Sequence seq2, std::vector<Sequence> in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
-	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
-	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
-	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(seq1.length()+1, seq2.length()))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()+1, seq2.length())))
+	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1)))
+	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1)))
+	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(seq1.length()-1, seq2.length()-1))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1)))
 	, aligned_seq(""), aligned_ref_seq(""){
-
+        //print_dp_matrix(0);
+        distance.readBlosum62("Blosum62.txt");
+        std::cout<< "D length = "<<D[0].get_length()<<std::endl;
 	};
 
 	std::vector<int> getOtherIndices(int i){
@@ -78,15 +80,26 @@ public:
 	void smith_waterman_update(int frame, int i, int j){
 
 
-		int set_value = std::max( D[frame].get_entry(i-1,j) - full_gap_penalty, P[frame].get_entry(i-1,j) - m_gep);
+		/*int set_value = std::max( D[frame].get_entry(i-1,j) - full_gap_penalty, P[frame].get_entry(i-1,j) - m_gep);
 		P[frame].set_entry(i, j, set_value);
 
 		set_value = std::max( D[frame].get_entry(i,j-1) - full_gap_penalty, Q[frame].get_entry(i,j-1) - m_gep);
 		Q[frame].set_entry(i, j, set_value);
 
-		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};
+		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};*/
+        int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), D[frame].get_entry(i-1, j) - m_gep, D[frame].get_entry(i, j-1) -m_gep};
+
+        std::cout<<" i = "<< i<< ", j = "<<j<<std::endl;
+        int val = max_array[0];
+        std::cout<<"max_arr[0] = "<<val<<std::endl;
+        val = max_array[1];
+        std::cout<<"max_arr[1] = "<<val<<std::endl;
+        val = max_array[2];
+        std::cout<<"max_arr[2] = "<<val<<std::endl;
+
 		const int N = sizeof(max_array) / sizeof(int);
-		set_value = *std::max_element(max_array, max_array+N);
+		int set_value = *std::max_element(max_array, max_array+N);
+        std::cout<<"set_value = "<<set_value<<std::endl;
 		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
 		//std::cout<<" last_move = "<< last_move<<std::endl;
 		char last_move_c;
@@ -138,24 +151,24 @@ public:
 	void back_trace(int frame){
 
 		Sequence al_seq = sequences[frame];
-		int first_row_v = al_seq.length()-1;
-		int first_col_v = m_refseq.length()-1;
+		int first_row_v = m_seq.length()-2;
+		int first_col_v = m_refseq.length()-2;
 		std::string seq = "";
 		std::string ref_seq = "";
-		while((first_col_v >= 0) && (first_row_v >= 0)){
+		while((first_col_v >= 0) || (first_row_v >= 0)){
 		//	std::cout<<"backtrace"<<std::endl;
 			char action = last_entry[frame].get_entry(first_row_v, first_col_v);
 		//	std::cout<<"action = "<<action<<std::endl;
 			if(action == 'D'){
 				ref_seq += '_';
-				seq += al_seq[first_row_v];
+				seq += m_seq[first_row_v];
 				first_row_v--;
 			}else if(action == 'I'){
 				seq += '_';
 				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 			}else if(action == 'M'){
-				seq += al_seq[first_row_v];
+				seq += m_seq[first_row_v];
 				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 				first_row_v--;
@@ -164,15 +177,10 @@ public:
 		}
 		reverse(seq.begin(), seq.end());
 		reverse(ref_seq.begin(), ref_seq.end());
-		std::string rev_seq = "";
-		std::string rev_ref_seq = "";
-		for(int i = seq.length()-1; i >= 0; --i){
-			rev_seq.push_back(seq[i]);
-			rev_ref_seq.push_back(ref_seq[i]);
-		}
 
-		aligned_seq = rev_seq;
-		aligned_ref_seq = rev_ref_seq;
+
+		aligned_seq = seq;
+		aligned_ref_seq = ref_seq;
 
 	}
 
@@ -187,8 +195,8 @@ public:
 		int i2 = otherIndices[1];
 
 		smith_waterman_update(frame, i, j);
-		frame_shift_update(frame, i1, i, j);
-		frame_shift_update(frame, i2, i, j);
+		/*frame_shift_update(frame, i1, i, j);
+		frame_shift_update(frame, i2, i, j);*/
 	}
 
 	void compute_smith_waterman_matrices(int frame){
@@ -212,17 +220,19 @@ public:
 
 		Sequence ref_seq = m_refseq;
 		Sequence seq = m_seq;
-		for(int i = 0; i < seq.length(); ++i){
-			for(int j = 0; j < ref_seq.length(); ++j){
+		for(int i = 0; i < seq.length()-1; ++i){
+			for(int j = 0; j < ref_seq.length()-1; ++j){
 				extend_dp_Matrix(0, i, j);
 				extend_dp_Matrix(1, i, j);
 				extend_dp_Matrix(2, i, j);
 			}
 		}
 
-		int t1 = D[0].get_entry(sequences[0].length()-1, sequences[0].length()-1);
-		int t2 = D[1].get_entry(sequences[1].length()-1, sequences[1].length()-1);
-		int t3 = D[2].get_entry(sequences[2].length()-1, sequences[2].length()-1);
+        print_bt_matrix(0);
+        print_dp_matrix(0);
+		int t1 = D[0].get_entry(sequences[0].length()-2, sequences[0].length()-2);
+		int t2 = D[1].get_entry(sequences[1].length()-2, sequences[1].length()-2);
+		int t3 = D[2].get_entry(sequences[2].length()-2, sequences[2].length()-2);
 
 		int max_array[3] = {t1, t2, t3};
 		const int N = sizeof(max_array) / sizeof(int);
