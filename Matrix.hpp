@@ -15,36 +15,33 @@ template<class T> class Matrix{
 		m_matrix[i][j] = value;
 	}	
 
-	template<>
-	int get_entry<int>(int i, int j){
+	T get_entry(int i, int j){
 
-		if((i == -1) && (j >= 0)){
-			return -j-1;
-		}else if(i == -1){
-			return 0;
-		}else if((j == -1) && (i >= 0)){
-			return -i-1;
-		}else if(j == -1){
-			return 0;
-		}else{
-			return m_matrix[i][j];
-		}
-	}
-
-	template<>
-	char get_entry<char>(int i, int j){
-
-		if((i == -1) && (j >= 0)){
-			return 'D';
-		}else if(i == -1){
-			return 'F';
-		}else if((j == -1) && (i >= 0)){
-			return 'I';
-		}else if(j == -1){
-			return 'F';
-		}else{
-			return m_matrix[i][j];
-		}
+        if(std::is_same<T, int>::value) {
+            if ((i == -1) && (j >= 0)) {
+                return -j - 1;
+            } else if (i == -1) {
+                return 0;
+            } else if ((j == -1) && (i >= 0)) {
+                return -i - 1;
+            } else if (j == -1) {
+                return 0;
+            } else {
+                return m_matrix[i][j];
+            }
+        }else if(std::is_same<T,char>::value){
+            if((i == -1) && (j >= 0)){
+                return 'I';
+            }else if(i == -1){
+                return 'F';
+            }else if((j == -1) && (i >= 0)){
+                return 'D';
+            }else if(j == -1){
+                return 'F';
+            }else{
+                return m_matrix[i][j];
+            }
+        }
 	}
 
 

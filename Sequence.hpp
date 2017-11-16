@@ -11,8 +11,12 @@ class Sequence{
 			assert(i > -1);
 			return m_seq[i];
 		}
-		Sequence(std::string s):m_seq(s){};
-		Sequence(): m_seq(""){};
+		Sequence(std::string s):m_seq(s){
+            assert(m_seq.length() == s.length());
+        };
+        Sequence():m_seq(std::string()){
+            assert(m_seq.length() == 0);
+        };
 		Sequence shift(int i){
 			return m_seq.substr(i, m_seq.length());
 		}

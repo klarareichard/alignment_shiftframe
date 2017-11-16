@@ -1,3 +1,7 @@
+#include <sstream>
+#include <iostream>
+#include <string>
+
 class InputReader{
 public:
 	std::string read;
@@ -5,9 +9,10 @@ public:
 	std::string aligned_read;
 	std::string aligned_ref;
 
+    InputReader():read(std::string()), reference(std::string()), aligned_read(std::string()), aligned_ref(std::string()){};
 	void readFASTAfile(std::string filename){
 
-		std::string line;
+		std::string line = std::string();
 		std::ifstream infile(filename);
 		bool readNextTwoLines = false;
 		bool readNextLine = false;
@@ -15,12 +20,17 @@ public:
 		
 		while (std::getline(infile, line))
 		{
+            auto stream = std::istringstream(line);
 			if(line_num == 0){
 				assert(line[0] == '>');
 			}else if(line_num == 1){
-				read = line;
+				stream >> read;
 			}else if(line_num == 2){
-				reference = line;
+				stream >> reference;
+                for(int i = 0; i < reference.length(); ++i){
+                    std::cout<<"input_reader"<<std::endl;
+                    assert(!isspace(reference[i]));
+                }
 			}else if(line_num == 3){
 				aligned_read = line;
 			}else if(line_num == 4){

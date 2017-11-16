@@ -30,13 +30,27 @@ public:
 	ScoreMatrix distance;
 
 	Alignment(Sequence seq1, Sequence seq2, std::vector<Sequence> in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
-	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1)))
-	, P(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1))), Q(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1)))
-	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(seq1.length()-1, seq2.length()-1))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(seq1.length()-1, seq2.length()-1)))
+	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), D(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length())))
+	, P(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length())))
+	, sequences(in_sequences), last_entry(std::vector<Matrix<char>>(3, Matrix<char>(m_seq.length(), m_refseq.length()))), m_frame(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length())))
 	, aligned_seq(""), aligned_ref_seq(""){
         //print_dp_matrix(0);
-        distance.readBlosum62("Blosum62.txt");
+        distance.readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
+        distance.print();
         std::cout<< "D length = "<<D[0].get_length()<<std::endl;
+        std::cout<< "D width = "<<D[0].get_width()<<std::endl;
+        std::cout<< " width = "<<D[0].get_length()<<std::endl;
+        std::cout<<"m_ref_seq = "<< m_refseq.get_string()<<std::endl;
+        for(int i = 0; i < m_refseq.length(); ++i){
+            std::cout<<"hi"<<std::endl;
+            assert(!isspace(m_refseq.get_string()[i]));
+        }
+        std::cout<<"m_seq = "<<m_seq.get_string()<<std::endl;
+        std::cout<<"seq_length = "<<m_seq.length()<<std::endl;
+        std::cout<<"refseq_length = "<<m_refseq.length()<<std::endl;
+
+
+        std::cout<<"sequences[1] = "<< sequences[1].get_string()<<std::endl;
 	};
 
 	std::vector<int> getOtherIndices(int i){
@@ -87,19 +101,24 @@ public:
 		Q[frame].set_entry(i, j, set_value);
 
 		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};*/
-        int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), D[frame].get_entry(i-1, j) - m_gep, D[frame].get_entry(i, j-1) -m_gep};
+        int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(m_seq[i], m_refseq[j]), D[frame].get_entry(i-1, j) - m_gep, D[frame].get_entry(i, j-1) -m_gep};
 
-        std::cout<<" i = "<< i<< ", j = "<<j<<std::endl;
+        //std::cout<<" i = "<< i<< ", j = "<<j<<std::endl;
         int val = max_array[0];
-        std::cout<<"max_arr[0] = "<<val<<std::endl;
+        //std::cout<<"max_arr[0] = "<<val<<std::endl;
         val = max_array[1];
-        std::cout<<"max_arr[1] = "<<val<<std::endl;
+        //std::cout<<"max_arr[1] = "<<val<<std::endl;
         val = max_array[2];
-        std::cout<<"max_arr[2] = "<<val<<std::endl;
+        //std::cout<<"max_arr[2] = "<<val<<std::endl;
+
+        //std::cout<<"distance = "<< distance.getDistance(m_seq[i], m_refseq[j])<<std::endl;
+
+        //std::cout<<" match "<<m_seq[i]<<" and "<<m_refseq[j]<<std::endl;
+        //std::cout<<"max array of one is minus zero"
 
 		const int N = sizeof(max_array) / sizeof(int);
 		int set_value = *std::max_element(max_array, max_array+N);
-        std::cout<<"set_value = "<<set_value<<std::endl;
+        //std::cout<<"set_value = "<<set_value<<std::endl;
 		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
 		//std::cout<<" last_move = "<< last_move<<std::endl;
 		char last_move_c;
@@ -150,9 +169,9 @@ public:
 
 	void back_trace(int frame){
 
-		Sequence al_seq = sequences[frame];
-		int first_row_v = m_seq.length()-2;
-		int first_col_v = m_refseq.length()-2;
+		//Sequence al_seq = sequences[frame];
+		int first_row_v = m_seq.length()-1;
+		int first_col_v = m_refseq.length()-1;
 		std::string seq = "";
 		std::string ref_seq = "";
 		while((first_col_v >= 0) || (first_row_v >= 0)){
@@ -172,7 +191,10 @@ public:
 				ref_seq += m_refseq[first_col_v];
 				first_col_v--;
 				first_row_v--;
-			}
+			}else if(action == 'F'){
+                first_col_v--;
+                first_row_v--;
+            }
 
 		}
 		reverse(seq.begin(), seq.end());
@@ -187,7 +209,7 @@ public:
 
 	void extend_dp_Matrix(int frame, int i, int j){
 
-		Sequence seq = sequences[frame];
+		Sequence seq = m_seq;
 		Sequence ref = m_refseq;
 
 		std::vector<int> otherIndices = getOtherIndices(frame);
@@ -216,30 +238,30 @@ public:
 		}
 	}
 
-	void compute_all_dp_matrices(){
+	void compute_all_dp_matrices(int frame){
 
 		Sequence ref_seq = m_refseq;
 		Sequence seq = m_seq;
-		for(int i = 0; i < seq.length()-1; ++i){
-			for(int j = 0; j < ref_seq.length()-1; ++j){
+		for(int i = 0; i < seq.length(); ++i){
+			for(int j = 0; j < ref_seq.length(); ++j){
 				extend_dp_Matrix(0, i, j);
-				extend_dp_Matrix(1, i, j);
-				extend_dp_Matrix(2, i, j);
+				//extend_dp_Matrix(1, i, j);
+				//extend_dp_Matrix(2, i, j);
 			}
 		}
 
-        print_bt_matrix(0);
-        print_dp_matrix(0);
-		int t1 = D[0].get_entry(sequences[0].length()-2, sequences[0].length()-2);
+        print_bt_matrix(frame);
+        print_dp_matrix(frame);
+		/*int t1 = D[0].get_entry(sequences[0].length()-2, sequences[0].length()-2);
 		int t2 = D[1].get_entry(sequences[1].length()-2, sequences[1].length()-2);
 		int t3 = D[2].get_entry(sequences[2].length()-2, sequences[2].length()-2);
 
 		int max_array[3] = {t1, t2, t3};
 		const int N = sizeof(max_array) / sizeof(int);
 		int max = *std::max_element(max_array, max_array+N);
-		int max_element = std::distance(max_array, std::max_element(max_array, max_array+N));
+		int max_element = std::distance(max_array, std::max_element(max_array, max_array+N));*/
 
-		back_trace(max_element);
+		back_trace(frame);
 
 
 

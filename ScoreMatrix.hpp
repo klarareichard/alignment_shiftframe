@@ -3,6 +3,7 @@
 #include <utility>
 #include "MatrixReader.hpp"
 #include <iostream>
+#include "assert.h"
 
 class ScoreMatrix{
 public:
@@ -10,40 +11,55 @@ public:
 	std::string file_name;
 	
 	ScoreMatrix(){
+        readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
 	}
 
 	int getDistance(char a1, char a2){
 
-		std::string concat = "";
+		std::string concat = std::string();
+        for(int i = 0; i < concat.length(); ++i){
+            assert(!isspace(concat[i]));
+        }
+        assert(!isspace(concat[0]));
+        assert(!isspace(concat[1]));
 		concat+= a1;
 		concat+= a2;
+        for(int i = 0; i < concat.length(); ++i){
+            assert(!isspace(concat[i]));
+        }
 		//std::cout<<"concat = "<< concat <<std::endl;
 		int distance;
 		if(hash_map.find(concat) != hash_map.end()){
 			distance = (hash_map.find(concat))->second;
 		}else{
+            //std::cout<<"concat = "<<concat<<std::endl;
 			distance = -1;
+            assert(0);
 		}
 		return distance;
 	}
 
 	void print(){
 		for(auto it(hash_map.begin()); it != hash_map.end(); ++it){
-			std::cout<<"key = "<< it->first<<std::endl;
-			std::cout<<"value = "<< it->second<<std::endl;
+			//std::cout<<"key = "<< it->first<<std::endl;
+			//std::cout<<"value = "<< it->second<<std::endl;
 		}
 	}
 
 	void readBlosum62(std::string filename){
 		std::string rows_and_columns;
 
+        std::cout<<"readBlusm"<<std::endl;
 		std::string line;
 		std::ifstream infile(filename);
+        if(!infile.is_open()){
+            std::cout<<"File not open!"<<std::endl;
+        }
 		int line_num = -1;
-		infile>>std::ws;
 		while (std::getline(infile, line))
 		{
 		    std::istringstream iss(line);
+            //std::cout<<"line = "<<line<<std::endl;
 		    iss>>std::ws;
 		    char c;
 		    if(line[0] != '#'){
@@ -61,9 +77,12 @@ public:
 			    	int i;
 			    	while(iss >> i){
 			    		//if((!isspace(c))){
-				    		std::string s = "";
+				    		std::string s = std::string();
 				    		s += row_nuc;
 				    		s += rows_and_columns[col_num];
+                            for(int l = 0; l < s.length(); l ++){
+                                assert(!isspace(s[l]));
+                            }
 				    		hash_map.insert({s, i });
 				    		//std::cout<<"s = "<<s<<std::endl;
 				    		//std::cout<<"distance = "<<i<<std::endl;
