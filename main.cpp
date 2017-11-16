@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
     std::cout<<"empty sequence length = "<<s.length()<<std::endl;
 
     ScoreMatrix distance;
-    //distance.readBlosum62("Blosum62.txt");
+
 	BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))   
 	{
 
@@ -37,10 +37,10 @@ int main(int argc, char * argv[])
             Sequence seq1(sequences[1]);
             Sequence seq2(ir.get_ref_seq());
 
-            std::cout<<"reference sequence = "<<seq2.get_string()<<std::endl;
-            std::cout<<"sequence = "<<seq1.get_string()<<std::endl;
-            std::cout<<"reference sequence length = "<< seq2.length()<<std::endl;
-            Alignment al(seq1, seq2, sequences, 1, 1, 11);
+            /*std::cout << "reference sequence = " << seq2.get_string() << std::endl;
+            std::cout << "sequence = " << seq1.get_string() << std::endl;
+            std::cout << "reference sequence length = " << seq2.length() << std::endl;*/
+            Alignment al(seq1, seq2, sequences, 11, 1, 11);
             std::string aligned_compare = ir.get_aligned_seq();
             al.compute_all_dp_matrices(0);
             std::string aligned = al.get_aligned_seq();
@@ -65,6 +65,8 @@ int main(int argc, char * argv[])
 
 
             // do something with p
+
+
         }
 
 	}

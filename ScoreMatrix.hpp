@@ -32,7 +32,7 @@ public:
 		if(hash_map.find(concat) != hash_map.end()){
 			distance = (hash_map.find(concat))->second;
 		}else{
-            //std::cout<<"concat = "<<concat<<std::endl;
+            std::cout<<"concat = "<<concat<<std::endl;
 			distance = -1;
             assert(0);
 		}
@@ -41,15 +41,15 @@ public:
 
 	void print(){
 		for(auto it(hash_map.begin()); it != hash_map.end(); ++it){
-			//std::cout<<"key = "<< it->first<<std::endl;
-			//std::cout<<"value = "<< it->second<<std::endl;
+			std::cout<<"key = "<< it->first<<std::endl;
+			std::cout<<"value = "<< it->second<<std::endl;
 		}
 	}
 
 	void readBlosum62(std::string filename){
 		std::string rows_and_columns;
 
-        std::cout<<"readBlusm"<<std::endl;
+        //std::cout<<"readBlusm"<<std::endl;
 		std::string line;
 		std::ifstream infile(filename);
         if(!infile.is_open()){

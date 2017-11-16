@@ -98,7 +98,7 @@ public:
 	}
 
         void translate(Sequence & in_seq){
-            std::cout<<"Nucleotide sequence = "<< in_seq.get_string() << std::endl;
+            //std::cout<<"Nucleotide sequence = "<< in_seq.get_string() << std::endl;
             Sequence out_seq;
             for(int i = 0; i < in_seq.length()/3; ++i){
                     Sequence seed = in_seq.substr(i*3, 3);

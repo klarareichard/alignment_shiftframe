@@ -5,11 +5,14 @@ template<class T> class Matrix{
 	
 	public:
 		int m_length; 
-		int m_width; 
+		int m_width;
+        bool gap_opening_penalty;
 		std::vector<std::vector<T> > m_matrix;
 
 		
-	Matrix(int length, int width):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0)){};
+	Matrix(int length, int width):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0)), gap_opening_penalty(false){};
+
+    Matrix(int length, int width, bool gop):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0)), gap_opening_penalty(gop){};
 	
 	void set_entry(int i, int j, T value){
 		m_matrix[i][j] = value;
@@ -17,7 +20,7 @@ template<class T> class Matrix{
 
 	T get_entry(int i, int j){
 
-        if(std::is_same<T, int>::value) {
+        if((std::is_same<T, int>::value) && (!gap_opening_penalty)) {
             if ((i == -1) && (j >= 0)) {
                 return -j - 1;
             } else if (i == -1) {
@@ -39,6 +42,18 @@ template<class T> class Matrix{
             }else if(j == -1){
                 return 'F';
             }else{
+                return m_matrix[i][j];
+            }
+        }else if((std::is_same<T, int>::value) && (gap_opening_penalty)){
+            if ((i == -1) && (j >= 0)) {
+                return (-j - 1)*12;
+            } else if (i == -1) {
+                return 0;
+            } else if ((j == -1) && (i >= 0)) {
+                return (-i - 1)*12;
+            } else if (j == -1) {
+                return 0;
+            } else {
                 return m_matrix[i][j];
             }
         }

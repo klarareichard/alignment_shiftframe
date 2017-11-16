@@ -28,7 +28,7 @@ public:
 			}else if(line_num == 2){
 				stream >> reference;
                 for(int i = 0; i < reference.length(); ++i){
-                    std::cout<<"input_reader"<<std::endl;
+                    //std::cout<<"input_reader"<<std::endl;
                     assert(!isspace(reference[i]));
                 }
 			}else if(line_num == 3){
