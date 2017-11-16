@@ -8,6 +8,7 @@ public:
 	std::string reference;
 	std::string aligned_read;
 	std::string aligned_ref;
+    int score;
 
     InputReader():read(std::string()), reference(std::string()), aligned_read(std::string()), aligned_ref(std::string()){};
 	void readFASTAfile(std::string filename){
@@ -20,6 +21,7 @@ public:
 		
 		while (std::getline(infile, line))
 		{
+            std::istringstream iss(line);
             auto stream = std::istringstream(line);
 			if(line_num == 0){
 				assert(line[0] == '>');
@@ -35,7 +37,9 @@ public:
 				aligned_read = line;
 			}else if(line_num == 4){
 				aligned_ref = line;
-			}
+			}else if(line_num == 6){
+                iss >> score;
+            }
 			line_num++;
 		}
 
@@ -61,5 +65,9 @@ public:
 	std::string get_ref_seq(){
 		return reference;
 	}
+
+    int get_score(){
+        return score;
+    }
 		
 };

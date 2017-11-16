@@ -46,11 +46,11 @@ template<class T> class Matrix{
             }
         }else if((std::is_same<T, int>::value) && (gap_opening_penalty)){
             if ((i == -1) && (j >= 0)) {
-                return (-j - 1)*12;
+                return (-j - 12);
             } else if (i == -1) {
                 return 0;
             } else if ((j == -1) && (i >= 0)) {
-                return (-i - 1)*12;
+                return (-i - 12);
             } else if (j == -1) {
                 return 0;
             } else {

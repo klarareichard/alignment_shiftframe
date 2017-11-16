@@ -112,6 +112,9 @@ public:
                             in_seq.print("in_seq");*/
                     }
             }
+            for(int i = 0; i < out_seq.length(); ++i){
+                assert(!isspace(out_seq.get_entry(i)));
+            }
             m_out_sequences.push_back(out_seq);
 
         }

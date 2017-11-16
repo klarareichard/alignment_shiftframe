@@ -22,53 +22,53 @@ int main(int argc, char * argv[])
     std::cout<<"empty sequence length = "<<s.length()<<std::endl;
 
     ScoreMatrix distance;
+    int count = 0;
 
 	BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))   
 	{
+        //if(count == 0) {
+            if (fs::is_regular_file(p)) {
+                InputReader ir;
+                ir.readFASTAfile(p.string());
+                //code
+                Translator t;
+                Sequence tr_seq = Sequence(ir.get_seq());
+                t.translate_shift(tr_seq);
+                std::vector<Sequence> sequences = t.get_out_sequences();
+                Sequence seq1(sequences[1]);
+                Sequence seq2(ir.get_ref_seq());
 
-        if (fs::is_regular_file(p)) {
-            InputReader ir;
-            ir.readFASTAfile(p.string());
-            //code
-            Translator t;
-            Sequence tr_seq = Sequence(ir.get_seq());
-            t.translate_shift(tr_seq);
-            std::vector<Sequence> sequences = t.get_out_sequences();
-            Sequence seq1(sequences[1]);
-            Sequence seq2(ir.get_ref_seq());
+                /*std::cout << "reference sequence = " << seq2.get_string() << std::endl;
+                std::cout << "sequence = " << seq1.get_string() << std::endl;
+                std::cout << "reference sequence length = " << seq2.length() << std::endl;*/
+                Alignment al(seq1, seq2, sequences, 11, 1, 11);
+                std::string aligned_compare = ir.get_aligned_seq();
+                al.compute_all_dp_matrices(0);
+                std::string aligned = al.get_aligned_seq();
 
-            /*std::cout << "reference sequence = " << seq2.get_string() << std::endl;
-            std::cout << "sequence = " << seq1.get_string() << std::endl;
-            std::cout << "reference sequence length = " << seq2.length() << std::endl;*/
-            Alignment al(seq1, seq2, sequences, 11, 1, 11);
-            std::string aligned_compare = ir.get_aligned_seq();
-            al.compute_all_dp_matrices(0);
-            std::string aligned = al.get_aligned_seq();
+                if (!(aligned == aligned_compare)) {
+                    std::cout << " result : " << std::endl;
+                    std::cout << aligned << std::endl;
+                    std::cout << al.get_aligned_ref_seq() << std::endl;
 
-            if (!(aligned == aligned_compare)) {
-                std::cout << " result : " << std::endl;
-                std::cout << aligned << std::endl;
-                std::cout << al.get_aligned_ref_seq() << std::endl;
-
-                std::cout << " reference alignment : " << std::endl;
-                std::cout << aligned_compare << std::endl;
-                std::cout << ir.get_aligned_ref_seq() << std::endl;
-
-
-            }
-
-            //al.print_dp_matrix(0);
-            //al.print_p_matrix(0);
-            //al.print_q_matrix(0);
-            //al.print_bt_matrix(0);
-            //t.print_translated_sequences();*/
+                    std::cout << " reference alignment : " << std::endl;
+                    std::cout << aligned_compare << std::endl;
+                    std::cout << ir.get_aligned_ref_seq() << std::endl;
+                    std::cout << "score = "<< ir.get_score()<<std::endl;
 
 
-            // do something with p
+                }
+
+                //al.print_bt_matrix(0);
+                //t.print_translated_sequences();*/
+
+                //assert(ir.get_score() <= al.get_score());
+                // do something with p
 
 
+           // }
+           // count++;
         }
-
 	}
 
 	

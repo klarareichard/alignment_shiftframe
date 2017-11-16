@@ -17,6 +17,7 @@ public:
 	int m_gep; // gap extension penalty
 	int full_gap_penalty = m_gop + m_gep;
 	int m_delta;
+    int m_score;
 
 	std::vector<Matrix<int>> D;
 	std::vector<Matrix<int>> P; 
@@ -30,7 +31,18 @@ public:
 	ScoreMatrix distance;
 
 	Alignment(Sequence seq1, Sequence seq2, std::vector<Sequence> in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
-	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), sequences(in_sequences){
+	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), sequences(in_sequences), m_score(9){
+
+        for(int i = 0; i < sequences[0].length(); ++i){
+            assert(!isspace(sequences[0].get_entry(i)));
+        }
+        for(int i = 0; i < sequences[1].length(); ++i){
+            assert(!isspace(sequences[1].get_entry(i)));
+        }
+        for(int i = 0; i < sequences[2].length(); ++i){
+            assert(!isspace(sequences[2].get_entry(i)));
+        }
+
 
         /*D(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length())))
                 , P(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length()))), Q(std::vector<Matrix<int>>(3, Matrix<int>(m_seq.length(), m_refseq.length())))
@@ -39,25 +51,25 @@ public:
 
 
 
-        Matrix<int> D0(sequences[0].length(), m_refseq.length());
-        Matrix<int> D1(sequences[0].length(), m_refseq.length());
-        Matrix<int> D2(sequences[0].length(), m_refseq.length());
+        Matrix<int> D0(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> D1(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> D2(sequences[0].length(), m_refseq.length(), true);
 
         D.push_back(D0);
         D.push_back(D1);
         D.push_back(D2);
 
-        Matrix<int> P0(sequences[0].length(), m_refseq.length());
-        Matrix<int> P1(sequences[0].length(), m_refseq.length());
-        Matrix<int> P2(sequences[0].length(), m_refseq.length());
+        Matrix<int> P0(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> P1(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> P2(sequences[0].length(), m_refseq.length(), true);
 
         P.push_back(P0);
         P.push_back(P1);
         P.push_back(P2);
 
-        Matrix<int> Q0(sequences[0].length(), m_refseq.length());
-        Matrix<int> Q1(sequences[0].length(), m_refseq.length());
-        Matrix<int> Q2(sequences[0].length(), m_refseq.length());
+        Matrix<int> Q0(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> Q1(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> Q2(sequences[0].length(), m_refseq.length(), true);
 
         Q.push_back(Q0);
         Q.push_back(Q1);
@@ -97,6 +109,10 @@ public:
 
         //std::cout<<"sequences[1] = "<< sequences[1].get_string()<<std::endl;
 	};
+
+    int get_score(){
+        return m_score;
+    }
 
 	std::vector<int> getOtherIndices(int i){
 
@@ -139,14 +155,14 @@ public:
 	void smith_waterman_update(int frame, int i, int j){
 
 
-		/*int set_value = std::max( D[frame].get_entry(i-1,j) - full_gap_penalty, P[frame].get_entry(i-1,j) - m_gep);
+		int set_value = std::max( D[frame].get_entry(i-1,j) - full_gap_penalty, P[frame].get_entry(i-1,j) - m_gep);
 		P[frame].set_entry(i, j, set_value);
 
 		set_value = std::max( D[frame].get_entry(i,j-1) - full_gap_penalty, Q[frame].get_entry(i,j-1) - m_gep);
 		Q[frame].set_entry(i, j, set_value);
 
-		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};*/
-        int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), D[frame].get_entry(i-1, j) - m_gep, D[frame].get_entry(i, j-1) -m_gep};
+		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};
+        //int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), D[frame].get_entry(i-1, j) - m_gep, D[frame].get_entry(i, j-1) -m_gep};
 
         //std::cout<<" i = "<< i<< ", j = "<<j<<std::endl;
         int val = max_array[0];
@@ -162,7 +178,7 @@ public:
         //std::cout<<"max array of one is minus zero"
 
 		const int N = sizeof(max_array) / sizeof(int);
-		int set_value = *std::max_element(max_array, max_array+N);
+		set_value = *std::max_element(max_array, max_array+N);
         //std::cout<<"set_value = "<<set_value<<std::endl;
 		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
 		//std::cout<<" last_move = "<< last_move<<std::endl;
@@ -183,8 +199,8 @@ public:
 
 	void frame_shift_update(int curr_frame, int update_frame, int i, int j){
 		
-		int t1 = std::max(D[update_frame].get_entry(i-1,j) - full_gap_penalty, P[update_frame].get_entry(i-1,j) - m_gep);
-		int t2 = std::max(D[update_frame].get_entry(i,j-1) - full_gap_penalty, Q[update_frame].get_entry(i,j-1) - m_gep);
+		int t1 = std::max(D[update_frame].get_entry(i-1,j) - m_gop, P[update_frame].get_entry(i-1,j) - m_gep);
+		int t2 = std::max(D[update_frame].get_entry(i,j-1) - m_gop, Q[update_frame].get_entry(i,j-1) - m_gep);
 
 		int max_array[3] = {D[update_frame].get_entry(i-1,j-1) + distance.getDistance(sequences[curr_frame][i], m_refseq[j]), t1, t2};
 		const int N = sizeof(max_array) / sizeof(int);
@@ -219,6 +235,7 @@ public:
 		int first_col_v = m_refseq.length()-1;
 
         std::cout<<"score = "<<D[frame].get_entry(first_row_v, first_col_v)<<std::endl;
+        m_score = D[frame].get_entry(first_row_v, first_col_v);
 		std::string seq = "";
 		std::string ref_seq = "";
 		while((first_col_v >= 0) || (first_row_v >= 0)){
@@ -298,6 +315,11 @@ public:
 		const int N = sizeof(max_array) / sizeof(int);
 		int max = *std::max_element(max_array, max_array+N);
 		int max_element = std::distance(max_array, std::max_element(max_array, max_array+N));
+
+        /*print_dp_matrix(max_element);
+        print_p_matrix(max_element);
+        print_q_matrix(max_element);
+        print_bt_matrix(max_element);*/
 
 		back_trace(max_element);
 
