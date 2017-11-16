@@ -23,7 +23,7 @@ public:
 	std::vector<Matrix<int>> P; 
 	std::vector<Matrix<int>> Q;
 	std::vector<Matrix<char>> last_entry;
-	std::vector<Matrix<int>> m_frame;
+	Matrix<int> m_frame;
 	std::vector<int> lengths;
 
 
@@ -84,13 +84,7 @@ public:
         last_entry.push_back(last_entry1);
         last_entry.push_back(last_entry2);
 
-        Matrix<int> m_frame0(sequences[0].length(), m_refseq.length());
-        Matrix<int> m_frame1(sequences[0].length(), m_refseq.length());
-        Matrix<int> m_frame2(sequences[0].length(), m_refseq.length());
-
-        m_frame.push_back(m_frame0);
-        m_frame.push_back(m_frame1);
-        m_frame.push_back(m_frame2);
+        Matrix<int> m_frame(sequences[0].length(), m_refseq.length());
         //print_dp_matrix(0);
         distance.readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
        // distance.print();
@@ -222,8 +216,10 @@ public:
 			Q[curr_frame].set_entry(i,j, t2 - m_delta);
 			D[curr_frame].set_entry(i,j, t3 - m_delta);
 			last_entry[curr_frame].set_entry(i, j, last_move_c);
-			m_frame[curr_frame].set_entry(i, j, update_frame);
-		}
+			m_frame.set_entry(i, j, update_frame);
+		}else{
+            m_frame.set_entry(i, j, curr_frame);
+        }
 
 		
 	}
