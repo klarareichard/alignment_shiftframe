@@ -24,7 +24,27 @@ int main(int argc, char * argv[])
     ScoreMatrix distance;
     int count = 0;
 
-	BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))   
+    Translator t;
+    Sequence tr_seq = Sequence("CTGATGTCTAGA");
+    t.translate_shift(tr_seq);
+    std::vector<Sequence> sequences = t.get_out_sequences();
+    Sequence seq1(sequences[1]);
+    Sequence seq2("MS");
+
+    /*std::cout << "reference sequence = " << seq2.get_string() << std::endl;
+    std::cout << "sequence = " << seq1.get_string() << std::endl;
+    std::cout << "reference sequence length = " << seq2.length() << std::endl;*/
+    Alignment al(seq1, seq2, sequences, 11, 1, 12);
+    al.compute_all_dp_matrices(0);
+
+    al.print_bt_matrix(0);
+    std::cout << " result : " << std::endl;
+    std::cout << al.get_aligned_seq() << std::endl;
+    std::cout << al.get_aligned_ref_seq() << std::endl;
+    std::cout << "score = "<< al.get_score()<<std::endl;
+
+
+	BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
 	{
         //if(count == 0) {
             if (fs::is_regular_file(p)) {
@@ -38,9 +58,6 @@ int main(int argc, char * argv[])
                 Sequence seq1(sequences[1]);
                 Sequence seq2(ir.get_ref_seq());
 
-                /*std::cout << "reference sequence = " << seq2.get_string() << std::endl;
-                std::cout << "sequence = " << seq1.get_string() << std::endl;
-                std::cout << "reference sequence length = " << seq2.length() << std::endl;*/
                 Alignment al(seq1, seq2, sequences, 11, 1, 12);
                 std::string aligned_compare = ir.get_aligned_seq();
                 al.compute_all_dp_matrices(0);
@@ -52,7 +69,7 @@ int main(int argc, char * argv[])
                     std::cout << al.get_aligned_ref_seq() << std::endl;
                     std::cout << "score = "<< al.get_score()<<std::endl;
                     std::vector<int> frames = al.get_v_frame();
-                    for(int i = 0; i < frames.size(); ++i){
+                    for(int i = frames.size()-1 ; i >= 0; --i){
                         std::cout<<frames[i]+1;
 
                     }
@@ -69,7 +86,7 @@ int main(int argc, char * argv[])
                 }
 
                 //al.print_bt_matrix(0);
-                //t.print_translated_sequences();*/
+                //t.print_translated_sequences();
 
                 //assert(ir.get_score() <= al.get_score());
                 // do something with p

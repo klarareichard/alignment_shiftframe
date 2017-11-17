@@ -212,14 +212,19 @@ public:
 		int t1 = std::max(D[update_frame].get_entry(i-1,j) - m_gop, P[update_frame].get_entry(i-1,j) - m_gep);
 
         int t2 = std::numeric_limits<int>::min();
+        int t3 = std::numeric_limits<int>::min();
+        int last_move = 0;
         if(sequences[update_frame].length() > i) {
             t2 = std::max(D[update_frame].get_entry(i, j - 1) - m_gop, Q[update_frame].get_entry(i, j - 1) - m_gep);
-        }
 
-		int max_array[3] = {D[update_frame].get_entry(i-1,j-1) + distance.getDistance(sequences[curr_frame][i], m_refseq[j]), t1, t2};
-		const int N = sizeof(max_array) / sizeof(int);
-		int t3 = *std::max_element(max_array, max_array+N);
-		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
+
+            int max_array[3] = {D[update_frame].get_entry(i - 1, j - 1) +
+                                distance.getDistance(sequences[curr_frame][i], m_refseq[j]), t1, t2};
+
+            const int N = sizeof(max_array) / sizeof(int);
+            t3 = *std::max_element(max_array, max_array + N);
+            last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
+        }
 		char last_move_c;
 		if(last_move == 0){
 			last_move_c = 'M';
@@ -238,7 +243,6 @@ public:
 			last_entry[curr_frame].set_entry(i, j, last_move_c);
 			m_frame[curr_frame].set_entry(i, j, update_frame);
 		}else{
-            m_frame[curr_frame].set_entry(i, j, curr_frame);
         }
 
 		
@@ -301,7 +305,7 @@ public:
 		int first_row_v = al_seq.length()-1;
 		int first_col_v = m_refseq.length()-1;
 
-        std::cout<<"score = "<<D[frame].get_entry(first_row_v, first_col_v)<<std::endl;
+        std::cout<<"score = "<<D[m_frame[frame].get_entry(first_row_v, first_col_v)].get_entry(first_row_v, first_col_v)<<std::endl;
         m_score = D[frame].get_entry(first_row_v, first_col_v);
 		std::string seq = "";
 		std::string ref_seq = "";
@@ -382,6 +386,7 @@ public:
         for(int i = min_length; i < sequences[0].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(0, i, j);
+                //frame_shift_update(0, i, j);
                 //extend_dp_Matrix(1, i, j);
                 //extend_dp_Matrix(2, i, j);
 
@@ -390,6 +395,8 @@ public:
         for(int i = min_length; i < sequences[1].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(1, i, j);
+                //frame_shift_update(1, i, j);
+
                 //extend_dp_Matrix(1, i, j);
                 //extend_dp_Matrix(2, i, j);
 
@@ -398,6 +405,7 @@ public:
         for(int i = min_length; i < sequences[2].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(2, i, j);
+                //frame_shift_update(2, i, j);
                 //extend_dp_Matrix(1, i, j);
                 //extend_dp_Matrix(2, i, j);
 
@@ -410,9 +418,9 @@ public:
 
         //print_frame_matrices();
         //print_dp_matrix(frame);
-		int t1 = D[0].get_entry(sequences[0].length()-2, sequences[0].length()-2);
-		int t2 = D[1].get_entry(sequences[1].length()-2, sequences[1].length()-2);
-		int t3 = D[2].get_entry(sequences[2].length()-2, sequences[2].length()-2);
+		int t1 = D[0].get_entry(sequences[0].length()-1, m_refseq.length()-1);
+		int t2 = D[1].get_entry(sequences[1].length()-1, m_refseq.length()-1);
+		int t3 = D[2].get_entry(sequences[2].length()-1, m_refseq.length()-1);
 
 		int max_array[3] = {t1, t2, t3};
 		const int N = sizeof(max_array) / sizeof(int);
