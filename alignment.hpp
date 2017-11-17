@@ -6,6 +6,7 @@
 #include "ScoreMatrix.hpp"
 #include <algorithm>
 #include <assert.h>
+#include <limits>
 
 class Alignment{
 public:
@@ -23,8 +24,9 @@ public:
 	std::vector<Matrix<int>> P; 
 	std::vector<Matrix<int>> Q;
 	std::vector<Matrix<char>> last_entry;
-	Matrix<int> m_frame;
+	std::vector<Matrix<int>> m_frame;
 	std::vector<int> lengths;
+    std::vector<int> v_frame;
 
 
 	std::vector<Sequence> sequences;
@@ -84,7 +86,14 @@ public:
         last_entry.push_back(last_entry1);
         last_entry.push_back(last_entry2);
 
-        Matrix<int> m_frame(sequences[0].length(), m_refseq.length());
+        Matrix<int> m_frame0(sequences[0].length(), m_refseq.length());
+        Matrix<int> m_frame1(sequences[0].length(), m_refseq.length());
+        Matrix<int> m_frame2(sequences[0].length(), m_refseq.length());
+
+        m_frame.push_back(m_frame0);
+        m_frame.push_back(m_frame1);
+        m_frame.push_back(m_frame2);
+
         //print_dp_matrix(0);
         distance.readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
        // distance.print();
@@ -130,6 +139,13 @@ public:
 	void print_dp_matrix(int frame){
 		D[frame].print("D");
 	}
+
+    void print_frame_matrices(){
+        for(int i = 0; i < 3; ++i){
+            m_frame[i].print("frame");
+            std::cout<<std::endl;
+        }
+    }
 
 	void print_score_matrix(){
 		distance.print();
@@ -192,9 +208,13 @@ public:
 	}
 
 	void frame_shift_update(int curr_frame, int update_frame, int i, int j){
-		
+
 		int t1 = std::max(D[update_frame].get_entry(i-1,j) - m_gop, P[update_frame].get_entry(i-1,j) - m_gep);
-		int t2 = std::max(D[update_frame].get_entry(i,j-1) - m_gop, Q[update_frame].get_entry(i,j-1) - m_gep);
+
+        int t2 = std::numeric_limits<int>::min();
+        if(sequences[update_frame].length() > i) {
+            t2 = std::max(D[update_frame].get_entry(i, j - 1) - m_gop, Q[update_frame].get_entry(i, j - 1) - m_gep);
+        }
 
 		int max_array[3] = {D[update_frame].get_entry(i-1,j-1) + distance.getDistance(sequences[curr_frame][i], m_refseq[j]), t1, t2};
 		const int N = sizeof(max_array) / sizeof(int);
@@ -216,13 +236,64 @@ public:
 			Q[curr_frame].set_entry(i,j, t2 - m_delta);
 			D[curr_frame].set_entry(i,j, t3 - m_delta);
 			last_entry[curr_frame].set_entry(i, j, last_move_c);
-			m_frame.set_entry(i, j, update_frame);
+			m_frame[curr_frame].set_entry(i, j, update_frame);
 		}else{
-            m_frame.set_entry(i, j, curr_frame);
+            m_frame[curr_frame].set_entry(i, j, curr_frame);
         }
 
 		
 	}
+
+    void back_trace_iteration(int &frame, int &i, int &j, std::string &seq, std::string &ref_seq, std::vector<int> &v_frame){
+
+
+        char action = last_entry[frame].get_entry(i, j);
+        if( m_frame[frame].get_entry(i, j) >= 0) {
+            frame = m_frame[frame].get_entry(i, j);
+        }
+        //std::cout<<"backtrace frame "<< frame << std::endl;
+        v_frame.push_back(frame);
+        if(action == 'D'){
+            ref_seq += '_';
+            seq+= sequences[frame][i];
+            i--;
+        }else if(action == 'I'){
+            seq+= '_';
+            ref_seq += m_refseq[j];
+            j--;
+        }else if(action == 'M'){
+            seq += sequences[frame][i];
+            ref_seq += m_refseq[j];
+            j--;
+            i--;
+        }else if(action == 'F'){
+            i--;
+            j--;
+        }
+    }
+
+    std::vector<int> get_v_frame(){
+        return v_frame;
+    }
+
+    void back_trace2(int frame){
+        std::string seq = std::string();
+        std::string ref_seq = std::string();
+        int first_row_v = sequences[frame].length()-1;
+        int first_col_v = m_refseq.length()-1;
+        m_score = D[frame].get_entry(first_row_v, first_col_v);
+
+        while((first_col_v >= 0) || (first_row_v >= 0) ){
+            back_trace_iteration(frame, first_row_v, first_col_v, seq, ref_seq, v_frame);
+        }
+        reverse(seq.begin(), seq.end());
+        reverse(ref_seq.begin(), ref_seq.end());
+
+
+        aligned_seq = seq;
+        aligned_ref_seq = ref_seq;
+
+    }
 
 	void back_trace(int frame){
 
@@ -270,38 +341,74 @@ public:
 	void extend_dp_Matrix(int frame, int i, int j){
 
 
-		std::vector<int> otherIndices = getOtherIndices(frame);
-		int i1 = otherIndices[0];
-		int i2 = otherIndices[1];
-
 		smith_waterman_update(frame, i, j);
-		/*frame_shift_update(frame, i1, i, j);
-		frame_shift_update(frame, i2, i, j);*/
+
 	}
+
+    void frame_shift_update(int frame, int i, int j){
+        std::vector<int> otherIndices = getOtherIndices(frame);
+        int i1 = otherIndices[0];
+        int i2 = otherIndices[1];
+
+        frame_shift_update(frame, i1, i, j);
+        frame_shift_update(frame, i2, i, j);
+    }
 
 	void compute_all_dp_matrices(int frame){
 
 		Sequence ref_seq = m_refseq;
 		Sequence seq = m_seq;
-		for(int i = 0; i < sequences[0].length(); ++i){
-			for(int j = 0; j < ref_seq.length(); ++j){
-				extend_dp_Matrix(0, i, j);
-			}
-		}
 
-        for(int i = 0; i < sequences[1].length(); ++i){
+        int min_length = sequences[0].length();
+        if(sequences[1].length() < min_length){
+            min_length = sequences[1].length();
+        }
+        if(sequences[2].length() < min_length){
+            min_length = sequences[2].length();
+        }
+
+        for(int i = 0; i < min_length; ++i){
+            for(int j = 0; j < ref_seq.length(); ++j){
+                extend_dp_Matrix(0, i, j);
+                extend_dp_Matrix(1, i, j);
+                extend_dp_Matrix(2, i, j);
+
+                frame_shift_update(0, i, j);
+                frame_shift_update(1, i, j);
+                frame_shift_update(2, i, j);
+            }
+        }
+
+        for(int i = min_length; i < sequences[0].length(); ++i){
+            for(int j = 0; j < ref_seq.length(); ++j){
+                extend_dp_Matrix(0, i, j);
+                //extend_dp_Matrix(1, i, j);
+                //extend_dp_Matrix(2, i, j);
+
+            }
+        }
+        for(int i = min_length; i < sequences[1].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(1, i, j);
+                //extend_dp_Matrix(1, i, j);
+                //extend_dp_Matrix(2, i, j);
+
             }
         }
-        for(int i = 0; i < sequences[2].length(); ++i){
+        for(int i = min_length; i < sequences[2].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(2, i, j);
+                //extend_dp_Matrix(1, i, j);
+                //extend_dp_Matrix(2, i, j);
+
             }
         }
 
 
-        //print_bt_matrix(frame);
+
+
+
+        //print_frame_matrices();
         //print_dp_matrix(frame);
 		int t1 = D[0].get_entry(sequences[0].length()-2, sequences[0].length()-2);
 		int t2 = D[1].get_entry(sequences[1].length()-2, sequences[1].length()-2);
@@ -317,7 +424,7 @@ public:
         print_q_matrix(max_element);
         print_bt_matrix(max_element);*/
 
-		back_trace(max_element);
+		back_trace2(max_element);
 
 
 

@@ -8,6 +8,7 @@ public:
 	std::string reference;
 	std::string aligned_read;
 	std::string aligned_ref;
+    std::string frames;
     int score;
 
     InputReader():read(std::string()), reference(std::string()), aligned_read(std::string()), aligned_ref(std::string()){};
@@ -37,7 +38,9 @@ public:
 				aligned_read = line;
 			}else if(line_num == 4){
 				aligned_ref = line;
-			}else if(line_num == 6){
+			}else if(line_num == 5){
+                iss >> frames;
+            }else if(line_num == 6) {
                 iss >> score;
             }
 			line_num++;
@@ -45,6 +48,9 @@ public:
 
 	}
 
+    std::string get_frames(){
+        return frames;
+    }
 	void print_input(){
 		std::cout<<"reference = "<< reference <<std::endl;
 		std::cout<<"read = "<< read <<std::endl;

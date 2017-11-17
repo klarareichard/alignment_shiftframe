@@ -91,9 +91,9 @@ public:
                 hash_map.insert({"AGA", 'R'});
                 hash_map.insert({"AGG", 'R'});
 
-                hash_map.insert({"TAA", '*'});
-                hash_map.insert({"TAG", '*'});
-                hash_map.insert({"TGA", '*'});
+                hash_map.insert({"TAA", 'X'});
+                hash_map.insert({"TAG", 'X'});
+                hash_map.insert({"TGA", 'X'});
 
 	}
 
