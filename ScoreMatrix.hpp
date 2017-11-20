@@ -11,17 +11,12 @@ public:
 	std::string file_name;
 	
 	ScoreMatrix(){
-        readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
+        readBlosum62("/home/klara/alignment_shiftframe/Blosum62.txt");
 	}
 
 	int getDistance(char a1, char a2){
 
 		std::string concat = std::string();
-        for(int i = 0; i < concat.length(); ++i){
-            assert(!isspace(concat[i]));
-        }
-        assert(!isspace(concat[0]));
-        assert(!isspace(concat[1]));
 		concat+= a1;
 		concat+= a2;
         for(int i = 0; i < concat.length(); ++i){

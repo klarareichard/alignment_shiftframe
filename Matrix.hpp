@@ -10,7 +10,7 @@ template<class T> class Matrix{
 		std::vector<std::vector<T> > m_matrix;
 
 		
-	Matrix(int length, int width):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0)), gap_opening_penalty(false){};
+	Matrix(int length, int width):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0.0)), gap_opening_penalty(false){};
 
     Matrix(int length, int width, bool gop):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0)), gap_opening_penalty(gop){};
 	
@@ -20,7 +20,7 @@ template<class T> class Matrix{
 
 	T get_entry(int i, int j){
 
-        if((std::is_same<T, int>::value) && (!gap_opening_penalty)) {
+        /*if((std::is_same<T, int>::value) && (!gap_opening_penalty)) {
             if ((i == -1) && (j >= 0)) {
                 return -j - 1;
             } else if (i == -1) {
@@ -32,7 +32,7 @@ template<class T> class Matrix{
             } else {
                 return m_matrix[i][j];
             }
-        }else if(std::is_same<T,char>::value){
+        }else */if(std::is_same<T,char>::value){
             if((i == -1) && (j >= 0)){
                 return 'I';
             }else if(i == -1){
@@ -44,7 +44,8 @@ template<class T> class Matrix{
             }else{
                 return m_matrix[i][j];
             }
-        }else if((std::is_same<T, int>::value) && (gap_opening_penalty)){
+        }
+        /*else if((std::is_same<T, int>::value) && (gap_opening_penalty)){
             if ((i == -1) && (j >= 0)) {
                 return (-j - 12);
             } else if (i == -1) {
@@ -55,7 +56,9 @@ template<class T> class Matrix{
                 return 0;
             } else {
                 return m_matrix[i][j];
-            }
+            }*/
+        else{
+            return m_matrix[i][j];
         }
 	}
 
@@ -70,8 +73,8 @@ template<class T> class Matrix{
 
 	void print(std::string name){
 		std::cout<<name<<std::endl;
-		for(int i = -1; i < this->get_length(); ++i){
-			for(int j = -1; j < this->get_width(); ++j){
+		for(int i = 0; i < this->get_length(); ++i){
+			for(int j = 0; j < this->get_width(); ++j){
 				/*std::cout<< name<<"[ "<<i<<" ][ "<<j<<"] = "*/ std::cout<< this->get_entry(i,j)<< " ";
 			}
 			std::cout<<std::endl;

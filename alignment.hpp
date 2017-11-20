@@ -28,6 +28,13 @@ public:
 	std::vector<int> lengths;
     std::vector<int> v_frame;
 
+    //data structure for second algorithm
+
+    Matrix<int> C_imp;
+    Matrix<int> D_imp;
+    Matrix<int> I_imp;
+    Matrix<char> last_entry_imp;
+
 
 	std::vector<Sequence> sequences;
 	ScoreMatrix distance;
@@ -54,16 +61,16 @@ public:
 
 
         Matrix<int> D0(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> D1(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> D2(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> D1(sequences[1].length(), m_refseq.length(), true);
+        Matrix<int> D2(sequences[2].length(), m_refseq.length(), true);
 
         D.push_back(D0);
         D.push_back(D1);
         D.push_back(D2);
 
         Matrix<int> P0(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> P1(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> P2(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> P1(sequences[1].length(), m_refseq.length(), true);
+        Matrix<int> P2(sequences[2].length(), m_refseq.length(), true);
 
         P.push_back(P0);
         P.push_back(P1);
@@ -79,23 +86,22 @@ public:
 
 
         Matrix<char> last_entry0(sequences[0].length(), m_refseq.length());
-        Matrix<char> last_entry1(sequences[0].length(), m_refseq.length());
-        Matrix<char> last_entry2(sequences[0].length(), m_refseq.length());
+        Matrix<char> last_entry1(sequences[1].length(), m_refseq.length());
+        Matrix<char> last_entry2(sequences[2].length(), m_refseq.length());
 
         last_entry.push_back(last_entry0);
         last_entry.push_back(last_entry1);
         last_entry.push_back(last_entry2);
 
         Matrix<int> m_frame0(sequences[0].length(), m_refseq.length());
-        Matrix<int> m_frame1(sequences[0].length(), m_refseq.length());
-        Matrix<int> m_frame2(sequences[0].length(), m_refseq.length());
+        Matrix<int> m_frame1(sequences[1].length(), m_refseq.length());
+        Matrix<int> m_frame2(sequences[2].length(), m_refseq.length());
 
         m_frame.push_back(m_frame0);
         m_frame.push_back(m_frame1);
         m_frame.push_back(m_frame2);
 
         //print_dp_matrix(0);
-        distance.readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
        // distance.print();
         /*std::cout<< "D length = "<<D[0].get_length()<<std::endl;
         std::cout<< "D width = "<<D[0].get_width()<<std::endl;
@@ -227,11 +233,11 @@ public:
         }
 		char last_move_c;
 		if(last_move == 0){
-			last_move_c = 'M';
-		}else if(last_move == 1){
 			last_move_c = 'D';
-		}else if(last_move == 2){
+		}else if(last_move == 1){
 			last_move_c = 'I';
+		}else if(last_move == 2){
+			last_move_c = 'M';
 		}else{
 			assert(0);
 		}
@@ -252,9 +258,7 @@ public:
 
 
         char action = last_entry[frame].get_entry(i, j);
-        if( m_frame[frame].get_entry(i, j) >= 0) {
-            frame = m_frame[frame].get_entry(i, j);
-        }
+
         //std::cout<<"backtrace frame "<< frame << std::endl;
         v_frame.push_back(frame);
         if(action == 'D'){
@@ -274,6 +278,10 @@ public:
             i--;
             j--;
         }
+        if( m_frame[frame].get_entry(i, j) >= 0) {
+            frame = m_frame[frame].get_entry(i, j);
+        }
+
     }
 
     std::vector<int> get_v_frame(){
