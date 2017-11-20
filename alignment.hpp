@@ -53,25 +53,25 @@ public:
 
 
 
-        Matrix<int> D0(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> D1(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> D2(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> D0(sequences[0].length(), m_refseq.length(), false);
+        Matrix<int> D1(sequences[1].length(), m_refseq.length(), false);
+        Matrix<int> D2(sequences[2].length(), m_refseq.length(), false );
 
         D.push_back(D0);
         D.push_back(D1);
         D.push_back(D2);
 
         Matrix<int> P0(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> P1(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> P2(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> P1(sequences[1].length(), m_refseq.length(), true);
+        Matrix<int> P2(sequences[2].length(), m_refseq.length(), true);
 
         P.push_back(P0);
         P.push_back(P1);
         P.push_back(P2);
 
         Matrix<int> Q0(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> Q1(sequences[0].length(), m_refseq.length(), true);
-        Matrix<int> Q2(sequences[0].length(), m_refseq.length(), true);
+        Matrix<int> Q1(sequences[1].length(), m_refseq.length(), true);
+        Matrix<int> Q2(sequences[2].length(), m_refseq.length(), true);
 
         Q.push_back(Q0);
         Q.push_back(Q1);
@@ -79,16 +79,16 @@ public:
 
 
         Matrix<char> last_entry0(sequences[0].length(), m_refseq.length());
-        Matrix<char> last_entry1(sequences[0].length(), m_refseq.length());
-        Matrix<char> last_entry2(sequences[0].length(), m_refseq.length());
+        Matrix<char> last_entry1(sequences[1].length(), m_refseq.length());
+        Matrix<char> last_entry2(sequences[2].length(), m_refseq.length());
 
         last_entry.push_back(last_entry0);
         last_entry.push_back(last_entry1);
         last_entry.push_back(last_entry2);
 
         Matrix<int> m_frame0(sequences[0].length(), m_refseq.length());
-        Matrix<int> m_frame1(sequences[0].length(), m_refseq.length());
-        Matrix<int> m_frame2(sequences[0].length(), m_refseq.length());
+        Matrix<int> m_frame1(sequences[1].length(), m_refseq.length());
+        Matrix<int> m_frame2(sequences[2].length(), m_refseq.length());
 
         m_frame.push_back(m_frame0);
         m_frame.push_back(m_frame1);
@@ -109,7 +109,9 @@ public:
         std::cout<<"seq_length = "<<m_seq.length()<<std::endl;
         std::cout<<"refseq_length = "<<m_refseq.length()<<std::endl;*/
 
-
+    std::cout<<"full_gap_penalty = "<< full_gap_penalty <<std::endl;
+        std::cout<<"m_gop = "<< m_gop<<std::endl;
+        std::cout<<"m_gep = "<< m_gep<<std::endl;
         //std::cout<<"sequences[1] = "<< sequences[1].get_string()<<std::endl;
 	};
 
@@ -209,13 +211,13 @@ public:
 
 	void frame_shift_update(int curr_frame, int update_frame, int i, int j){
 
-		int t1 = std::max(D[update_frame].get_entry(i-1,j) - m_gop, P[update_frame].get_entry(i-1,j) - m_gep);
+		int t1 = std::max(D[update_frame].get_entry(i-1,j) - full_gap_penalty, P[update_frame].get_entry(i-1,j) - m_gep);
 
         int t2 = std::numeric_limits<int>::min();
         int t3 = std::numeric_limits<int>::min();
         int last_move = 0;
         if(sequences[update_frame].length() > i) {
-            t2 = std::max(D[update_frame].get_entry(i, j - 1) - m_gop, Q[update_frame].get_entry(i, j - 1) - m_gep);
+            t2 = std::max(D[update_frame].get_entry(i, j - 1) - full_gap_penalty, Q[update_frame].get_entry(i, j - 1) - m_gep);
 
 
             int max_array[3] = {D[update_frame].get_entry(i - 1, j - 1) +
@@ -227,11 +229,11 @@ public:
         }
 		char last_move_c;
 		if(last_move == 0){
-			last_move_c = 'M';
-		}else if(last_move == 1){
 			last_move_c = 'D';
-		}else if(last_move == 2){
+		}else if(last_move == 1){
 			last_move_c = 'I';
+		}else if(last_move == 2){
+			last_move_c = 'M';
 		}else{
 			assert(0);
 		}
@@ -255,7 +257,10 @@ public:
         if( m_frame[frame].get_entry(i, j) >= 0) {
             frame = m_frame[frame].get_entry(i, j);
         }
-        //std::cout<<"backtrace frame "<< frame << std::endl;
+        /*std::cout<<"backtrace frame "<< frame << std::endl;
+        std::cout<<"i = "<<i<<std::endl;
+        std::cout<<"j = "<<j<<std::endl;
+        std::cout<<"action = "<<action<<std::endl;*/
         v_frame.push_back(frame);
         if(action == 'D'){
             ref_seq += '_';
@@ -281,6 +286,7 @@ public:
     }
 
     void back_trace2(int frame){
+        std::cout<<"backtrace"<<std::endl;
         std::string seq = std::string();
         std::string ref_seq = std::string();
         int first_row_v = sequences[frame].length()-1;
@@ -288,6 +294,7 @@ public:
         m_score = D[frame].get_entry(first_row_v, first_col_v);
 
         while((first_col_v >= 0) || (first_row_v >= 0) ){
+            //std::cout<<"backtrace"<<std::endl;
             back_trace_iteration(frame, first_row_v, first_col_v, seq, ref_seq, v_frame);
         }
         reverse(seq.begin(), seq.end());
@@ -375,7 +382,7 @@ public:
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(0, i, j);
                 extend_dp_Matrix(1, i, j);
-                extend_dp_Matrix(2, i, j);
+                extend_dp_Matrix(2,i, j);
 
                 frame_shift_update(0, i, j);
                 frame_shift_update(1, i, j);
@@ -392,11 +399,11 @@ public:
 
             }
         }
+
         for(int i = min_length; i < sequences[1].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(1, i, j);
                 //frame_shift_update(1, i, j);
-
                 //extend_dp_Matrix(1, i, j);
                 //extend_dp_Matrix(2, i, j);
 
@@ -406,6 +413,7 @@ public:
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(2, i, j);
                 //frame_shift_update(2, i, j);
+
                 //extend_dp_Matrix(1, i, j);
                 //extend_dp_Matrix(2, i, j);
 
@@ -416,7 +424,12 @@ public:
 
 
 
-        //print_frame_matrices();
+
+        //print_bt_matrix(0);
+
+        //print_bt_matrix(1);
+
+        //print_bt_matrix(2);
         //print_dp_matrix(frame);
 		int t1 = D[0].get_entry(sequences[0].length()-1, m_refseq.length()-1);
 		int t2 = D[1].get_entry(sequences[1].length()-1, m_refseq.length()-1);
