@@ -28,6 +28,7 @@ public:
 	std::vector<int> lengths;
     std::vector<int> v_frame;
 
+    //data structure for second algorithm
 
 	std::vector<Sequence> sequences;
 	ScoreMatrix distance;
@@ -56,6 +57,7 @@ public:
         Matrix<int> D0(sequences[0].length(), m_refseq.length(), false);
         Matrix<int> D1(sequences[1].length(), m_refseq.length(), false);
         Matrix<int> D2(sequences[2].length(), m_refseq.length(), false );
+
 
         D.push_back(D0);
         D.push_back(D1);
@@ -95,7 +97,6 @@ public:
         m_frame.push_back(m_frame2);
 
         //print_dp_matrix(0);
-        distance.readBlosum62("/Users/klara/alignment_shiftframe/Blosum62.txt");
        // distance.print();
         /*std::cout<< "D length = "<<D[0].get_length()<<std::endl;
         std::cout<< "D width = "<<D[0].get_width()<<std::endl;
@@ -257,10 +258,7 @@ public:
         if( m_frame[frame].get_entry(i, j) >= 0) {
             frame = m_frame[frame].get_entry(i, j);
         }
-        /*std::cout<<"backtrace frame "<< frame << std::endl;
-        std::cout<<"i = "<<i<<std::endl;
-        std::cout<<"j = "<<j<<std::endl;
-        std::cout<<"action = "<<action<<std::endl;*/
+
         v_frame.push_back(frame);
         if(action == 'D'){
             ref_seq += '_';
@@ -279,6 +277,10 @@ public:
             i--;
             j--;
         }
+        if( m_frame[frame].get_entry(i, j) >= 0) {
+            frame = m_frame[frame].get_entry(i, j);
+        }
+
     }
 
     std::vector<int> get_v_frame(){
