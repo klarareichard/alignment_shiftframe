@@ -110,11 +110,13 @@ public:
         std::cout<<"seq_length = "<<m_seq.length()<<std::endl;
         std::cout<<"refseq_length = "<<m_refseq.length()<<std::endl;*/
 
-    std::cout<<"full_gap_penalty = "<< full_gap_penalty <<std::endl;
+        std::cout<<"full_gap_penalty = "<< full_gap_penalty <<std::endl;
         std::cout<<"m_gop = "<< m_gop<<std::endl;
         std::cout<<"m_gep = "<< m_gep<<std::endl;
         //std::cout<<"sequences[1] = "<< sequences[1].get_string()<<std::endl;
-	};
+	}
+
+    Alignment() {};
 
     int get_score(){
         return m_score;

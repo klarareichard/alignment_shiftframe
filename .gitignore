@@ -5,3 +5,10 @@ Frameshift_samples/
 cmake-build-debug/
 main 
 main.dSYM/
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+alignment_shiftframe
+tests
+generate_random_sequences
+Makefile

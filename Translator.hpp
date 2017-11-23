@@ -2,6 +2,7 @@
 #include "Sequence.hpp"
 #include <unordered_map>
 #include <iostream>
+#include <math.h>
 class Translator{
 
 public:
@@ -80,7 +81,7 @@ public:
         void translate(Sequence & in_seq){
             //std::cout<<"Nucleotide sequence = "<< in_seq.get_string() << std::endl;
             Sequence out_seq;
-            for(int i = 0; i < in_seq.length()/3; ++i){
+            for(int i = 0; i < floor((double)(in_seq.length()/(double)3.0)); ++i){
                     Sequence seed = in_seq.substr(i*3, 3);
                     if(hash_map.find(seed.get_string()) != hash_map.end()){
                             char trans_char = (hash_map.find(seed.get_string()))->second;
