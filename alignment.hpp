@@ -33,7 +33,7 @@ public:
 	std::vector<Sequence> sequences;
 	ScoreMatrix distance;
 
-	Alignment(Sequence seq1, Sequence seq2, std::vector<Sequence> in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
+	Alignment(const Sequence &seq1, const Sequence &seq2, const std::vector<Sequence> &in_sequences, int gap_opening_penalty, int gap_extension_penalty, int delta): m_seq(seq1)
 	, m_refseq(seq2), m_gop(gap_opening_penalty), m_gep(gap_extension_penalty), m_delta(delta), sequences(in_sequences), m_score(9){
 
         for(int i = 0; i < sequences[0].length(); ++i){
@@ -177,26 +177,11 @@ public:
 		Q[frame].set_entry(i, j, set_value);
 
 		int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), P[frame].get_entry(i,j), Q[frame].get_entry(i,j)};
-        //int max_array[3] = {D[frame].get_entry(i-1,j-1) + distance.getDistance(sequences[frame][i], m_refseq[j]), D[frame].get_entry(i-1, j) - m_gep, D[frame].get_entry(i, j-1) -m_gep};
 
-        //std::cout<<" i = "<< i<< ", j = "<<j<<std::endl;
-        int val = max_array[0];
-        //std::cout<<"max_arr[0] = "<<val<<std::endl;
-        val = max_array[1];
-        //std::cout<<"max_arr[1] = "<<val<<std::endl;
-        val = max_array[2];
-        //std::cout<<"max_arr[2] = "<<val<<std::endl;
-
-        //std::cout<<"distance = "<< distance.getDistance(m_seq[i], m_refseq[j])<<std::endl;
-
-        //std::cout<<" match "<<m_seq[i]<<" and "<<m_refseq[j]<<std::endl;
-        //std::cout<<"max array of one is minus zero"
 
 		const int N = sizeof(max_array) / sizeof(int);
 		set_value = *std::max_element(max_array, max_array+N);
-        //std::cout<<"set_value = "<<set_value<<std::endl;
 		int last_move = std::distance(max_array, std::max_element(max_array, max_array+N));
-		//std::cout<<" last_move = "<< last_move<<std::endl;
 		char last_move_c;
 		if(last_move == 0){
 			last_move_c = 'M';
@@ -321,9 +306,8 @@ public:
 		std::string seq = "";
 		std::string ref_seq = "";
 		while((first_col_v >= 0) || (first_row_v >= 0)){
-		//	std::cout<<"backtrace"<<std::endl;
+
 			char action = last_entry[frame].get_entry(first_row_v, first_col_v);
-		//	std::cout<<"action = "<<action<<std::endl;
 			if(action == 'D'){
 				ref_seq += '_';
 				seq += al_seq[first_row_v];
@@ -397,9 +381,6 @@ public:
         for(int i = min_length; i < sequences[0].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(0, i, j);
-                //frame_shift_update(0, i, j);
-                //extend_dp_Matrix(1, i, j);
-                //extend_dp_Matrix(2, i, j);
 
             }
         }
@@ -407,34 +388,16 @@ public:
         for(int i = min_length; i < sequences[1].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(1, i, j);
-                //frame_shift_update(1, i, j);
-                //extend_dp_Matrix(1, i, j);
-                //extend_dp_Matrix(2, i, j);
 
             }
         }
         for(int i = min_length; i < sequences[2].length(); ++i){
             for(int j = 0; j < ref_seq.length(); ++j){
                 extend_dp_Matrix(2, i, j);
-                //frame_shift_update(2, i, j);
-
-                //extend_dp_Matrix(1, i, j);
-                //extend_dp_Matrix(2, i, j);
 
             }
         }
 
-
-
-
-
-
-        //print_bt_matrix(0);
-
-        //print_bt_matrix(1);
-
-        //print_bt_matrix(2);
-        //print_dp_matrix(frame);
 		int t1 = D[0].get_entry(sequences[0].length()-1, m_refseq.length()-1);
 		int t2 = D[1].get_entry(sequences[1].length()-1, m_refseq.length()-1);
 		int t3 = D[2].get_entry(sequences[2].length()-1, m_refseq.length()-1);
@@ -444,10 +407,6 @@ public:
 		int max = *std::max_element(max_array, max_array+N);
 		int max_element = std::distance(max_array, std::max_element(max_array, max_array+N));
 
-        /*print_dp_matrix(max_element);
-        print_p_matrix(max_element);
-        print_q_matrix(max_element);
-        print_bt_matrix(max_element);*/
 
 		back_trace2(max_element);
 

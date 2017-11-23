@@ -12,3 +12,4 @@ alignment_shiftframe
 tests
 generate_random_sequences
 Makefile
+generated_sample_sequences/

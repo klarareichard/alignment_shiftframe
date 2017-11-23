@@ -109,6 +109,7 @@ public:
                 assert(0);
                 return trans_char;
             }
+            return trans_char;
         }
 
         void translate_shift(Sequence & in_seq){

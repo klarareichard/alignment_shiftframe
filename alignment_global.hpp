@@ -9,6 +9,7 @@
 #include <limits>
 #include "Translator.hpp"
 
+
 class Alignment_imp{
 public:
     Sequence m_refseq;
@@ -38,18 +39,19 @@ public:
                                                                       D(Matrix<double>(m_seq.length(), m_refseq.length())),
                                                                       I(Matrix<double>(m_seq.length(), m_refseq.length())),
                                                                       last_entry(Matrix<char>(m_seq.length(), m_refseq.length())),
-                                                                                m_delta(delta),
-                                                                                         amino(Matrix<char>(m_seq.length(), m_refseq.length())),
-                                                                                         last_entry_d(m_seq.length(), m_refseq.length()),
-                                                                                         last_entry_i(m_seq.length(), m_refseq.length())
+                                                                      m_delta(delta),
+                                                                      amino(Matrix<char>(m_seq.length(), m_refseq.length())),
+                                                                      last_entry_d(m_seq.length(), m_refseq.length()),
+                                                                      last_entry_i(m_seq.length(), m_refseq.length())
                                                                       {};
+
 
     double dna_gap(int gap_size){
         double score = (double)((double)(-m_gep*(double)gap_size)/(double)3.0) - (double) m_gop;
         if((gap_size % 3 ) != 0){
-            score = -std::numeric_limits<double>::max();
+            score = -std::numeric_limits<double>::infinity();
         }
-        std::cout<<"score = "<<score<<std::endl;
+        //std::cout<<"score = "<<score<<std::endl;
         return score;
     }
     double pro_gap(int gap_size){
@@ -66,6 +68,8 @@ public:
         }
 
     }
+
+
 
     std::pair<int,double> get_max(const std::vector<double> &v){
         double max_val = -std::numeric_limits<double>::max();
@@ -95,43 +99,37 @@ public:
 
         if(s.length() == 2){
             for(int i = 0; i < nucleotides.size(); ++i){
-                std::string concat;
+                std::string concat = std::string();
                 concat += nucleotides[i];
                 concat += s;
-                //std::cout<<"seed = "<<concat<<std::endl;
+                //std::cout<<"concat = "<<concat<<std::endl;
+                for(int i = 0; i < concat.length(); ++i){
+                    assert(!isspace(concat[i]));
+                }
                 char amino_acid = t.translate(concat);
-                //std::cout<<"distance = "<<distance.getDistance(amino_acid, comp_amino)<<std::endl;
                 if(distance.getDistance(amino_acid, comp_amino) > max){
                     max = distance.getDistance(amino_acid, comp_amino);
                     max_amino_acid = amino_acid;
                 }
 
             }
-            //std::cout<<"concat = "<<max_amino_acid<<std::endl;
             for(int i = 0; i < nucleotides.size(); ++i){
-                std::string concat;
+                std::string concat = std::string();
                 concat += s;
                 concat += nucleotides[i];
                 char amino_acid = t.translate(concat);
-                //std::cout<<"seed = "<<concat<<std::endl;
-                //std::cout<<"distance = "<<distance.getDistance(amino_acid, comp_amino)<<std::endl;
                 if(distance.getDistance(amino_acid, comp_amino) > max){
                     max = distance.getDistance(amino_acid, comp_amino);
                     max_amino_acid = amino_acid;
                 }
             }
-            //std::cout<<"concat = "<<max_amino_acid<<std::endl;
             max = (double) max - (double) m_delta;
-            //std::cout<<"max = "<<max<<std::endl;
         }else if(s.length() == 3){
-            //std::cout<<"seed = "<<s<<std::endl;
             char amino_acid = t.translate(s);
             if(distance.getDistance(amino_acid, comp_amino) > max){
                 max = distance.getDistance(amino_acid, comp_amino);
                 max_amino_acid = amino_acid;
             }
-            //std::cout<<"concat = "<<max_amino_acid<<std::endl;
-            //std::cout<<"max = "<<max<<std::endl;
 
         }else if(s.length() == 4){
             std::vector<std::string> codons;
@@ -246,11 +244,11 @@ public:
             last_entry.set_entry(0, j, 'H');
         }
         for (int j = 1; j < m_refseq.length(); j++) {
-            C.set_entry(1, j, -std::numeric_limits<double>::max());
+            C.set_entry(1, j, -std::numeric_limits<double>::infinity());
         }
 
         for(int i = 0; i < m_seq.length(); ++i){
-            I.set_entry(i, 0, -std::numeric_limits<double>::max());
+            I.set_entry(i, 0, -std::numeric_limits<double>::infinity());
         }
 
         for(int j = 1; j < m_refseq.length(); ++j){
@@ -264,7 +262,7 @@ public:
 
         for(int i = 0; i < 3; ++i){
             for(int j = 0; j < m_refseq.length(); ++j){
-                D.set_entry(i, j, -std::numeric_limits<double>::max());
+                D.set_entry(i, j, -std::numeric_limits<double>::infinity());
             }
         }
 
@@ -328,27 +326,27 @@ public:
                 } else if (action == 'C') {
                     std::string sub_seq = m_seq.get_string().substr(first_row - 1, 2);
                     aligned_seq += get_max_score(sub_seq, m_refseq[first_col]).first;
-                    std::cout<<"sub_seq= "<<sub_seq<<std::endl;
-                    std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
-                    std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
+                    //std::cout<<"sub_seq= "<<sub_seq<<std::endl;
+                    //std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
+                    //std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
                     reference_seq += m_refseq[first_col];
                     first_col--;
                     first_row -= 2;
                 } else if (action == 'E') {
                     std::string sub_seq = m_seq.get_string().substr(first_row - 2, 3);
                     aligned_seq += get_max_score(sub_seq, m_refseq[first_col]).first;
-                    std::cout<<"sub_seq= "<<sub_seq<<std::endl;
-                    std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
-                    std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
+                    //std::cout<<"sub_seq= "<<sub_seq<<std::endl;
+                    //std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
+                    //std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
                     reference_seq += m_refseq[first_col];
                     first_col--;
                     first_row -= 3;
                 } else if (action == 'F') {
                     std::string sub_seq = m_seq.get_string().substr(first_row - 3, 4);
                     aligned_seq += get_max_score(sub_seq, m_refseq[first_col]).first;
-                    std::cout<<"sub_seq= "<<sub_seq<<std::endl;
-                    std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
-                    std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
+                    //std::cout<<"sub_seq= "<<sub_seq<<std::endl;
+                    //std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
+                    //std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
                     reference_seq += m_refseq[first_col];
                     first_col--;
                     first_row -= 4;
@@ -388,9 +386,9 @@ public:
                 action = last_entry_d.get_entry(first_row, first_col);
                 std::string sub_seq = m_seq.get_string().substr(first_row - 2, 3);
                 aligned_seq += get_max_score(sub_seq, m_refseq[first_col]).first;
-                std::cout<<"sub_seq= "<<sub_seq<<std::endl;
-                std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
-                std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
+                //std::cout<<"sub_seq= "<<sub_seq<<std::endl;
+                //std::cout<<"amino = "<<m_refseq[first_col]<<std::endl;
+                //std::cout<<"score = "<<get_max_score(sub_seq, m_refseq[first_col]).second<<std::endl;
                 reference_seq += '_';
                 first_row -= 3;
 

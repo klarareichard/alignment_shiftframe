@@ -23,7 +23,12 @@ class FileOutput{
 
 public:
 
-    FileOutput(){};
+    FileOutput(){
+        aligned_protseq = "AAAA";
+        aligned_refseq = "AAAA";
+        frames = "1111";
+        score = 1;
+    };
     FileOutput(std::string nucleo_seq, std::string ref_seq, std::string aligned_protseq, std::string aligned_refseq, std::string frames, int score):
     nucleo_seq(nucleo_seq), ref_seq(ref_seq), aligned_protseq(aligned_protseq), aligned_refseq(aligned_refseq), frames(frames), score(score){}
 
@@ -55,6 +60,22 @@ public:
     }
     std::string get_ref_seq(){
         return ref_seq;
+    }
+
+    std::string get_aligned_protseq(){
+        return aligned_protseq;
+    }
+
+    std::string get_aligned_refseq(){
+        return aligned_refseq;
+    }
+
+    std::string get_frames(){
+        return frames;
+    }
+
+    int get_score(){
+        return score;
     }
 
 };
@@ -168,9 +189,13 @@ void write_random_samples_to_file(const std::string &outfile_name){
     outfile.open(outfile_name, std::ofstream::out | std::ofstream::trunc);
     if(outfile.is_open()){
         for_generated_random_seq(1000, 100, 1500, 0.05, 0.05,[&](FileOutput f){
-            outfile << "<" <<std::endl;
+            outfile << ">" <<std::endl;
             outfile << f.get_nucleo_seq() <<std::endl;
             outfile << f.get_ref_seq() << std::endl;
+            //outfile << f.get_aligned_protseq() << std::endl;
+            //outfile << f.get_aligned_refseq() << std::endl;
+            //outfile << f.get_frames() << std::endl;
+            //outfile << f.get_score() << std::endl;
             outfile << std::endl;
         });
     }
@@ -181,6 +206,7 @@ void write_random_samples_to_file(const std::string &outfile_name){
 int main(int argc, char * argv[])
 {
     write_random_samples_to_file("generated_sample_sequences.txt");
+
 
 
     return 0;

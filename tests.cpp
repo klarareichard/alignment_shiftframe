@@ -4,6 +4,8 @@
 #include "InputReader.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include "alignment_global.hpp"
+#include <limits>
 #include "Sequence.hpp"
 
 class AlignmentTest : public testing::TestWithParam<const char*>{
@@ -55,9 +57,9 @@ public:
     }
 };
 
-INSTANTIATE_TEST_CASE_P(ScoreCheck, AlignmentTest, ::testing::Values("/Users/klara/alignment_shiftframe/Frameshift_samples"));
+//INSTANTIATE_TEST_CASE_P(ScoreCheck, AlignmentTest, ::testing::Values("/Users/klara/alignment_shiftframe/Frameshift_samples"));
 
-TEST_P(AlignmentTest,  ScoreCheck){
+/*TEST_P(AlignmentTest,  ScoreCheck){
     std::string al_seq = al.get_aligned_seq();
     std::string al_ref_seq = al.get_aligned_ref_seq();
     int real_score = 0;
@@ -66,6 +68,25 @@ TEST_P(AlignmentTest,  ScoreCheck){
     }
     int score = al.get_score();
     ASSERT_EQ(real_score, score);
+}*/
+
+TEST(AlignmentGlobal, dna_gapfunction){
+    int i = 6;
+    Alignment_imp a(Sequence("ACGT"), Sequence("LST"), 11, 1, 12);
+    int gap_6 = a.dna_gap(i);
+    ASSERT_EQ(gap_6, -13);
+    int gap_4 = a.dna_gap(4);
+}
+TEST(numeric_limits, numeric_limits){
+    int infinity = -std::numeric_limits<double>::infinity();
+    int test_val = -std::numeric_limits<double>::infinity()-1.0;
+    ASSERT_EQ(test_val, infinity);
+}
+
+TEST(AlignmentGlobal, compute_matrices){
+
+
+
 }
 
 
