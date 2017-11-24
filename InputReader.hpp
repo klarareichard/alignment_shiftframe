@@ -9,18 +9,29 @@ public:
 	std::string aligned_read;
 	std::string aligned_ref;
     std::string frames;
+	std::ifstream infile;
     int score;
 
-    InputReader():read(std::string()), reference(std::string()), aligned_read(std::string()), aligned_ref(std::string()){};
-	void readFASTAfile(std::string filename){
+    InputReader(const std::string &infile_name):read(std::string()), reference(std::string()), aligned_read(std::string()), aligned_ref(std::string()), infile(std::ifstream(infile_name)){};
+	~InputReader(){
+		infile.close();
+	}
+
+	bool hasNext(){
+		return (infile.peek()!=EOF);
+	}
+	void closeFile(){
+		infile.close();
+	}
+	void readFASTAfile(){
 
 		std::string line = std::string();
-		std::ifstream infile(filename);
+		//std::ifstream infile(filename);
 		bool readNextTwoLines = false;
 		bool readNextLine = false;
 		int line_num = 0;
 		
-		while (std::getline(infile, line))
+		while (std::getline(infile, line) && line_num <= 6)
 		{
             std::istringstream iss(line);
             auto stream = std::istringstream(line);
