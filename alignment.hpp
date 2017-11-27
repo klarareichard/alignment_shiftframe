@@ -110,9 +110,9 @@ public:
         std::cout<<"seq_length = "<<m_seq.length()<<std::endl;
         std::cout<<"refseq_length = "<<m_refseq.length()<<std::endl;*/
 
-        std::cout<<"full_gap_penalty = "<< full_gap_penalty <<std::endl;
-        std::cout<<"m_gop = "<< m_gop<<std::endl;
-        std::cout<<"m_gep = "<< m_gep<<std::endl;
+        //std::cout<<"full_gap_penalty = "<< full_gap_penalty <<std::endl;
+        //std::cout<<"m_gop = "<< m_gop<<std::endl;
+        //std::cout<<"m_gep = "<< m_gep<<std::endl;
         //std::cout<<"sequences[1] = "<< sequences[1].get_string()<<std::endl;
 	}
 
@@ -275,7 +275,7 @@ public:
     }
 
     void back_trace2(int frame){
-        std::cout<<"backtrace"<<std::endl;
+        //std::cout<<"backtrace"<<std::endl;
         std::string seq = std::string();
         std::string ref_seq = std::string();
         int first_row_v = sequences[frame].length()-1;
@@ -301,7 +301,7 @@ public:
 		int first_row_v = al_seq.length()-1;
 		int first_col_v = m_refseq.length()-1;
 
-        std::cout<<"score = "<<D[m_frame[frame].get_entry(first_row_v, first_col_v)].get_entry(first_row_v, first_col_v)<<std::endl;
+        //std::cout<<"score = "<<D[m_frame[frame].get_entry(first_row_v, first_col_v)].get_entry(first_row_v, first_col_v)<<std::endl;
         m_score = D[frame].get_entry(first_row_v, first_col_v);
 		std::string seq = "";
 		std::string ref_seq = "";

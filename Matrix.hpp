@@ -8,6 +8,7 @@ template<class T> class Matrix{
 		int m_width;
         bool gap_opening_penalty;
 		std::vector<std::vector<T> > m_matrix;
+        //T** m_matrix;
 
 		
 	Matrix(int length, int width):m_length(length), m_width(width), m_matrix(length, std::vector<T>(width, 0.0)), gap_opening_penalty(false){};
