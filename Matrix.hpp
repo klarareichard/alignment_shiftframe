@@ -7,14 +7,12 @@ template<class T> class Matrix{
 		const int m_length;
 		const int m_width;
         bool gap_opening_penalty;
-		T** m_matrix;
+		std::vector<std::vector<T>> m_matrix;
         //T** m_matrix;
 
 		
-	Matrix(int length, int width):m_length(length), m_width(width), gap_opening_penalty(false){
-        m_matrix = new T*[length+1];
-        for(int i = 0; i < length+1; ++i)
-            m_matrix[i] = new T[width+1];
+	Matrix(int length, int width):m_length(length), m_width(width), gap_opening_penalty(false), m_matrix(length+1, std::vector<T>(width+1)){
+
         if(std::is_same<T,int>::value){
             m_matrix[0][0] = 0;
             for(int j = 1; j <= width; ++j){
@@ -23,6 +21,17 @@ template<class T> class Matrix{
             for(int i = 1; i <= length; ++i){
                 m_matrix[i][0] = -i-1;
             }
+            for(int i = 0 ; i < length+1 - 11 ; ++i){
+                for(int j = i+11; j < length+1; ++j){
+                    m_matrix[i][j] = -std::numeric_limits<double>::infinity();
+
+                }
+            }
+            for(int j = 0; j < width+1 - 11 ; ++j){
+                for(int i = j+11; i < length+1; ++i){
+                    m_matrix[i][j] = -std::numeric_limits<double>::infinity();
+                }
+            }
 
         }else if(std::is_same<T, char>::value){
             m_matrix[0][0] = 'F';
@@ -34,32 +43,45 @@ template<class T> class Matrix{
                 m_matrix[i][0] = 'D';
             }
         }
+
     };
 
-    Matrix(int length, int width, bool gop):m_length(length), m_width(width),  gap_opening_penalty(gop){
-        m_matrix = new T*[length+1];
-        for(int i = 0; i < length+1; ++i)
-            m_matrix[i] = new T[width+1];
+    Matrix(int length, int width, bool gop):m_length(length), m_width(width),  gap_opening_penalty(gop), m_matrix(length+1, std::vector<T>(width+1)){
+
         if(std::is_same<T,int>::value){
             m_matrix[0][0] = 0;
-            for(int j = 1; j <= width; ++j){
+            for(int j = 1; j <= 10; ++j){
                 m_matrix[0][j] = -j-12;
             }
 
-            for(int i = 0; i <= length; ++i){
+            for(int i = 0; i <= 10; ++i){
                 m_matrix[i][0] = -i-12;
+            }
+            for(int i = 0 ; i < length+1 - 11 ; ++i){
+                for(int j = i+11; j < length+1; ++j){
+                    m_matrix[i][j] = -std::numeric_limits<double>::infinity();
+
+                }
+            }
+            for(int j = 0; j < width+1 - 11 ; ++j){
+                for(int i = j+11; i < length+1; ++i){
+                    m_matrix[i][j] = -std::numeric_limits<double>::infinity();
+                }
             }
         }else if(std::is_same<T, char>::value){
             m_matrix[0][0] = 'F';
-            for(int j = 1; j <= width; ++j){
+            for(int j = 1; j <= 10; ++j){
                 m_matrix[0][j] = 'I';
             }
 
-            for(int i = 1; i <= length; ++i){
+            for(int i = 1; i <= 10; ++i){
                 m_matrix[i][0] = 'D';
             }
         }
+
+
     };
+
 	
 	void set_entry(int i, int j, T value){
 		m_matrix[i+1][j+1] = value;
@@ -123,8 +145,8 @@ template<class T> class Matrix{
 
 	void print(std::string name){
 		std::cout<<name<<std::endl;
-		for(int i = 0; i < this->get_length(); ++i){
-			for(int j = 0; j < this->get_width(); ++j){
+		for(int i = -1; i < this->get_length(); ++i){
+			for(int j = -1; j < this->get_width(); ++j){
 				/*std::cout<< name<<"[ "<<i<<" ][ "<<j<<"] = "*/ std::cout<< this->get_entry(i,j)<< " ";
 			}
 			std::cout<<std::endl;

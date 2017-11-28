@@ -230,6 +230,9 @@ public:
 
 
         char action = last_entry[frame].get_entry(i, j);
+        std::cout<<"action = "<<action<<std::endl;
+        std::cout<<"i = "<<i<<std::endl;
+        std::cout<<"j = "<<j<<std::endl;
         if( m_frame[frame].get_entry(i, j) >= 0) {
             frame = m_frame[frame].get_entry(i, j);
         }
@@ -365,8 +368,9 @@ public:
         }
 
         for(int i = 0; i < sequences[0].length()/*min_length*/; ++i){
-            for(int j = 0; j < m_refseq.length(); ++j){
-                smith_waterman_update(0, i, j);
+            for(int j = std::max(0, i-10); j <= std::min(m_refseq.length(), i+10); ++j){
+
+                    smith_waterman_update(0, i, j);
                 /*smith_waterman_update(1, i, j);
                 smith_waterman_update(2,i, j);*/
 
@@ -384,13 +388,14 @@ public:
         }*/
 
         for(int i = 0 /*min_length*/; i < sequences[1].length(); ++i){
-            for(int j = 0; j < m_refseq.length(); ++j){
+            for(int j = std::max(0, i-10); j <= std::min(m_refseq.length(), i+10); ++j){
                 smith_waterman_update(1, i, j);
+
 
             }
         }
         for(int i = 0 /*min_length*/; i < sequences[2].length(); ++i){
-            for(int j = 0; j < m_refseq.length(); ++j){
+            for(int j = std::max(0, i-10); j <= std::min(m_refseq.length(), i+10); ++j){
                 smith_waterman_update(2, i, j);
 
             }

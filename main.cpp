@@ -100,7 +100,7 @@ int main(int argc, char * argv[])
 
             }
 
-            //al.print_bt_matrix(0);
+            al.print_bt_matrix(0);
             //t.print_translated_sequences();
 
             //assert(ir.get_score() <= al.get_score());
