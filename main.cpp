@@ -31,36 +31,65 @@ int main(int argc, char * argv[])
     int count = 0;
     InputReader ir(targetDir.string());
     std::clock_t begin = std::clock();
+    double io_time = 0.0;
+    double compute_matrices_time = 0.0;
+    double back_trace_time = 0.0;
+    double translate_time = 0.0;
+    double alignment_init_time = 0.0;
+
+
     while(ir.hasNext()){
 
+            std::clock_t begin_io = std::clock();
             ir.readFASTAfile();
+            std::clock_t end_io = std::clock();
+            io_time += (double)(end_io - begin_io)/(double)CLOCKS_PER_SEC;
             //std::cout<<"nucleotide = "<<ir.get_seq()<<std::endl;
             //code
+
+            std::clock_t begin_translate = std::clock();
             Translator t;
             Sequence tr_seq = Sequence(ir.get_seq());
             t.translate_shift(tr_seq);
-            std::vector<Sequence> sequences = t.get_out_sequences();
-            Sequence seq1(sequences[1]);
-            Sequence seq2(ir.get_ref_seq());
+            std::clock_t end_translate = std::clock();
 
-            Alignment al(seq1, seq2, sequences, m_gop, m_gep, delta);
+            translate_time+= (double)(end_translate - begin_translate)/(double)CLOCKS_PER_SEC;
+            std::vector<Sequence> & sequences = t.m_out_sequences;
+            Sequence & seq1 = sequences[1];
+            Sequence seq2 = Sequence(ir.reference);
+
+            std::clock_t begin_init = std::clock();
+            Alignment al(seq2, sequences, m_gop, m_gep, delta);
+            std::clock_t end_init = std::clock();
+
+            alignment_init_time+= (double)(end_init - begin_init)/(double)CLOCKS_PER_SEC;
             std::string aligned_compare = ir.get_aligned_seq();
+
+            std::clock_t begin_matrices = std::clock();
             al.compute_all_dp_matrices(0);
+            std::clock_t end_matrices = std::clock();
+
+            compute_matrices_time+= (double)(end_matrices - begin_matrices)/(double)CLOCKS_PER_SEC;
+
+            std::clock_t begin_backtrace = std::clock();
+            al.backtraceing();
+            std::clock_t end_backtrace = std::clock();
+            back_trace_time+= (double)(end_backtrace - begin_backtrace)/(double)CLOCKS_PER_SEC;
+
             std::string aligned = al.get_aligned_seq();
             assert(0);
 
             if (!(aligned == aligned_compare)) {
-                //std::cout << " result : " << std::endl;
-                //std::cout << aligned << std::endl;
-                //std::cout << al.get_aligned_ref_seq() << std::endl;
-                //std::cout << "score = " << al.get_score() << std::endl;
+                std::cout << " result : " << std::endl;
+                std::cout << aligned << std::endl;
+                std::cout << al.get_aligned_ref_seq() << std::endl;
+                std::cout << "score = " << al.get_score() << std::endl;
                 std::vector<int> frames = al.get_v_frame();
-                /*for (int i = frames.size() - 1; i >= 0; --i) {
+                for (int i = frames.size() - 1; i >= 0; --i) {
                     std::cout << frames[i] + 1;
 
-                }*/
-
-                //std::cout << std::endl;
+                }
+                std::cout << std::endl;
 
                 //std::cout << " reference alignment : " << std::endl;
                 //std::cout << aligned_compare << std::endl;
@@ -80,6 +109,12 @@ int main(int argc, char * argv[])
             //}
             //count++;
     }
+
+    std::cout<<"iotime = "<<io_time<<std::endl;
+    std::cout<<"translate_time = "<<translate_time<<std::endl;
+    std::cout<<"alignment_init_time = "<<alignment_init_time<<std::endl;
+    std::cout<<"matrices_time = "<<compute_matrices_time<<std::endl;
+    std::cout<<"backtrace_time = "<<back_trace_time<<std::endl;
     std::clock_t end = std::clock();
     std::clock_t time = (double) (end - begin)/CLOCKS_PER_SEC;
     std::cout<<"time = "<< time<< std::endl;

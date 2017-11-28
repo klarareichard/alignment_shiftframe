@@ -11,7 +11,7 @@ class Sequence{
 			assert(i > -1);
 			return m_seq[i];
 		}
-		Sequence(std::string s):m_seq(s){
+		Sequence(const std::string &s):m_seq(s){
             assert(m_seq.length() == s.length());
         };
         Sequence():m_seq(std::string()){

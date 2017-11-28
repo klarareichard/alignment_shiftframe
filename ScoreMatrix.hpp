@@ -19,9 +19,6 @@ public:
 		std::string concat = std::string();
 		concat+= a1;
 		concat+= a2;
-        for(int i = 0; i < concat.length(); ++i){
-            assert(!isspace(concat[i]));
-        }
 		//std::cout<<"concat = "<< concat <<std::endl;
 		int distance;
 		if(hash_map.find(concat) != hash_map.end()){
@@ -35,10 +32,7 @@ public:
 	}
 
 	void print(){
-		for(auto it(hash_map.begin()); it != hash_map.end(); ++it){
-			//std::cout<<"key = "<< it->first<<std::endl;
-			//std::cout<<"value = "<< it->second<<std::endl;
-		}
+
 	}
 
 	void readBlosum62(std::string filename){
