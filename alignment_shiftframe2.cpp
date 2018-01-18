@@ -31,8 +31,8 @@ int main(int argc, char * argv[])
     {
 
             if(fs::is_regular_file(p)) {
-                InputReader ir;
-                ir.readFASTAfile(p.string());
+                InputReader ir(p.string());
+                ir.readFASTAfile();
                 //code
                 Sequence tr_seq = Sequence(ir.get_seq());
                 Sequence seq2(ir.get_ref_seq());

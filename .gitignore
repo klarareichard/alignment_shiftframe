@@ -1,7 +1,19 @@
 .DS_Store
+generated_sample_sequences.txt
+alignment_shiftframe.cbp
+alignment_with_seeds
+generated_random_sequences.txt
+generate_sample_sequences.txt
+gmock.pc
+gmock_main.pc
+gtest.pc
+gtest_main.pc
 .idea/
 CMakeLists.txt
 Frameshift_samples/
+FrameshiftSamples/
+GeneratedSamples/
+googletest-master
 cmake-build-debug/
 main 
 main.dSYM/
@@ -12,4 +24,5 @@ alignment_shiftframe
 tests
 generate_random_sequences
 Makefile
+runUnitTests
 generated_sample_sequences/

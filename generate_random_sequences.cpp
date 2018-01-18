@@ -183,6 +183,27 @@ template<typename L> void for_generated_random_seq(int num_files, int min_seq_le
     }
 
 }
+template <typename L> void for_pairs_of_random_sequences(int num_files, int min_seq_length, int max_seq_length, L handle){
+    RandomSequenceGenerator rnd(min_seq_length, max_seq_length);
+    for(int i = 0; i < num_files; ++i){
+        std::string rnd_seq = rnd.generate_random_sequence();
+        std::string rnd_seq2 = rnd.generate_random_sequence();
+        handle(std::make_pair(rnd_seq, rnd_seq2));
+    }
+}
+
+void write_random_seq_pairs_to_file(const std::string &outfile_name){
+    std::ofstream outfile;
+    outfile.open(outfile_name, std::ofstream::out | std::ofstream::trunc);
+    if(outfile.is_open()){
+        for_pairs_of_random_sequences(100, 10, 30, [&](std::pair<std::string, std::string> seq){
+            outfile<< ">" <<std::endl;
+            outfile << seq.first <<std::endl;
+            outfile << seq.second <<std::endl;
+            outfile << std::endl;
+        });
+    }
+}
 
 void write_random_samples_to_file(const std::string &outfile_name){
     std::ofstream outfile;
@@ -206,6 +227,7 @@ void write_random_samples_to_file(const std::string &outfile_name){
 int main(int argc, char * argv[])
 {
     write_random_samples_to_file("generated_sample_sequences.txt");
+    write_random_seq_pairs_to_file("generated_random_sequences.txt");
 
 
 

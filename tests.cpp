@@ -7,6 +7,7 @@
 #include "alignment_global.hpp"
 #include <limits>
 #include "Sequence.hpp"
+#include "SeedFinder.hpp"
 
 class AlignmentTest : public testing::TestWithParam<const char*>{
 public:
@@ -29,8 +30,8 @@ public:
         BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod)) {
             if(count == 0) {
                 if (fs::is_regular_file(p)) {
-                    InputReader ir;
-                    ir.readFASTAfile(p.string());
+                    InputReader ir(p.string());
+                    ir.readFASTAfile();
                     //code
                     Translator t;
                     Sequence tr_seq = Sequence(ir.get_seq());
@@ -39,7 +40,7 @@ public:
                     Sequence seq1(sequences[1]);
                     Sequence seq2(ir.get_ref_seq());
 
-                    Alignment al(seq1, seq2, sequences, 11, 1, 12);
+                    Alignment al(seq2, sequences, 11, 1, 12);
                     std::string aligned_compare = ir.get_aligned_seq();
                     al.compute_all_dp_matrices(0);
 
@@ -87,6 +88,15 @@ TEST(AlignmentGlobal, compute_matrices){
 
 
 
+}
+
+TEST(SeedFinder, FindSeeds){
+    std::string query_seq("CTACCAGTCACCTCCACCTCTT");
+    std::string ref_seq("TTAAATAGTAGTCCCAGGGGGCTATT");
+    SeedFinder sf(ref_seq, query_seq);
+    sf.print_hash_map();
+    sf.findSeeds();
+    sf.print_seed_positions();
 }
 
 
